@@ -1,56 +1,53 @@
 # Collaboration Frontend / Backend
 
-## Responsabilités
+## Répartition
 
-### Jephte — Frontend
-- Conserver et faire évoluer le design existant dans `frontend/`.
-- Gérer les pages, composants visuels, formulaires et interactions JavaScript.
-- Appeler les endpoints PHP en HTTP avec des réponses JSON.
-- Afficher proprement les erreurs et états de chargement.
-- Ne jamais accéder directement à MySQL et ne jamais contenir de mot de passe SQL dans JavaScript.
+### Jephte — développeur frontend
+- Préserver et faire évoluer le design dans `frontend/`.
+- Développer les pages, formulaires et interactions HTML/CSS/JavaScript.
+- Consommer les endpoints PHP ci-dessous avec `fetch`.
+- Gérer les états de chargement et messages d'erreur.
+- Ne jamais accéder directement à MySQL ni placer des identifiants SQL dans le navigateur.
 
-### Kandu Gregory — Backend
-- Définir le schéma relationnel dans `database/schema.sql`.
+### Kandu Gregory — développeur backend
+- Maintenir le schéma relationnel dans `database/schema.sql`.
 - Développer les endpoints PHP dans `backend/public/api/`.
-- Implémenter validation serveur, authentification, autorisations et règles métier.
-- Garantir les transactions et la cohérence des stocks/commandes.
+- Gérer validation, authentification, autorisations, transactions et règles métier.
 - Documenter les changements de contrat API.
 
-## Contrat API initial
+## Base des routes
 
-Toutes les réponses sont au format JSON : `{ "success": true|false, ... }`.
+Sur XAMPP : `http://localhost/Projet-E_commerce/backend/public/api`.
 
-| Méthode | Endpoint | Accès | Fonction |
+Toutes les réponses sont JSON et contiennent un booléen `success`.
+
+| Méthode | Route | Accès | Description |
 |---|---|---|---|
-| GET | `/backend/public/api/products.php` | Public | Liste des produits actifs |
-| GET | `/backend/public/api/products.php?q=casque` | Public | Recherche par nom/description |
-| GET | `/backend/public/api/products.php?category=audio` | Public | Filtre par slug de catégorie |
-| POST | `/backend/public/api/auth/register.php` | Public | Créer un compte client |
-| POST | `/backend/public/api/auth/login.php` | Public | Ouvrir une session |
-| POST | `/backend/public/api/auth/logout.php` | Session | Fermer la session |
-| POST | `/backend/public/api/orders/create.php` | Session | Créer une commande |
+| GET | `/health.php` | Public | Vérifie API et MySQL |
+| GET | `/products.php` | Public | Produits actifs |
+| GET | `/products.php?q=casque` | Public | Recherche |
+| GET | `/products.php?category=audio` | Public | Filtre par slug |
+| GET | `/categories.php` | Public | Catégories |
+| POST | `/auth/register.php` | Public | Inscription client |
+| POST | `/auth/login.php` | Public | Connexion |
+| GET | `/auth/me.php` | Public | Session courante |
+| POST | `/auth/logout.php` | Session | Déconnexion |
+| POST | `/orders/create.php` | Session | Création de commande |
+| GET | `/orders/index.php` | Session | Historique du client connecté |
 
-### Exemple — inscription
+## Exemples de requêtes
 
+Inscription :
 ```json
-{
-  "name": "Nom du client",
-  "email": "client@example.com",
-  "password": "motdepasse-securise"
-}
+{ "name": "Nom du client", "email": "client@example.com", "password": "motdepasse-securise" }
 ```
 
-### Exemple — connexion
-
+Connexion :
 ```json
-{
-  "email": "client@example.com",
-  "password": "motdepasse-securise"
-}
+{ "email": "client@example.com", "password": "motdepasse-securise" }
 ```
 
-### Exemple — commande
-
+Commande :
 ```json
 {
   "shipping_address": "Adresse complète",
@@ -61,23 +58,39 @@ Toutes les réponses sont au format JSON : `{ "success": true|false, ... }`.
 }
 ```
 
-Le client envoie uniquement les identifiants des produits et les quantités. Le backend récupère les prix officiels en base, verrouille les lignes de stock pendant la transaction, calcule le total et enregistre la commande.
+Le backend recalcule les prix depuis MySQL, vérifie le stock et enregistre la commande dans une transaction. Le frontend ne doit jamais envoyer un prix considéré comme fiable.
 
-## Règles d'intégration
+## Intégration JavaScript
 
-1. Le frontend appelle les URLs relatives de l'application pour rester utilisable sur localhost et sur le réseau local.
-2. Les requêtes POST envoient `Content-Type: application/json`.
-3. Le navigateur conserve la session via le cookie HTTP ; les appels `fetch` doivent utiliser les paramètres de credentials adaptés à une application de même origine.
-4. Les erreurs HTTP (400, 401, 403, 409, 422, 500) doivent être affichées sans exposer les détails SQL.
-5. Les prix affichés dans le panier peuvent être indicatifs ; seul le total calculé par PHP fait foi.
-6. Avant d'ajouter ou modifier un endpoint, prévenir l'autre développeur et mettre à jour ce document.
+Exemple d'appel GET de même origine :
+```js
+const response = await fetch('../backend/public/api/products.php', {
+  credentials: 'same-origin',
+  headers: { 'Accept': 'application/json' }
+});
+const result = await response.json();
+if (!response.ok || !result.success) {
+  throw new Error(result.message || 'Erreur lors du chargement');
+}
+const products = result.data;
+```
 
-## Travail restant
+Pour les POST JSON, ajouter `method: 'POST'`, `Content-Type: 'application/json'` et `body: JSON.stringify(payload)`. Les sessions utilisent un cookie PHP. Les erreurs HTTP (401, 403, 409, 422, 500, 503) doivent être traitées par l'interface sans afficher les détails techniques.
 
-- Connecter le catalogue JavaScript à l'API produits.
-- Connecter inscription, connexion et déconnexion à la session PHP.
-- Persister panier/favoris côté serveur pour les utilisateurs connectés, si retenu dans le périmètre.
-- Finaliser l'historique et le suivi des commandes.
-- Ajouter protection CSRF sur les actions authentifiées, limitation des tentatives, validations et tests.
-- Définir le rôle administrateur de manière contrôlée et construire l'interface d'administration.
-- Choisir et intégrer un prestataire de paiement uniquement si le paiement en ligne est demandé.
+## Règles de travail
+
+1. Les URLs doivent rester relatives à l'application afin de fonctionner sur localhost et sur le réseau local.
+2. Toute nouvelle route doit préciser méthode, paramètres, réponse et codes HTTP.
+3. Prévenir l'autre développeur avant de modifier un contrat API existant.
+4. Garder les prix affichés comme indicatifs : le backend est la source de vérité.
+5. Faire des commits ciblés et des Pull Requests vers `main`.
+
+## Reste à faire
+
+- Intégration du catalogue et des filtres JavaScript avec les API produits/catégories.
+- Connexion des formulaires d'inscription/connexion et de l'état de session.
+- Connexion du panier et du formulaire de commande.
+- Ajouter protection CSRF aux opérations authentifiées, limitation des tentatives, tests et contrôles de sécurité.
+- Construire une administration avec attribution contrôlée du rôle admin.
+- Ajouter les fonctionnalités de favoris persistants si elles sont confirmées dans le périmètre.
+- Intégrer un prestataire de paiement uniquement si le paiement en ligne est retenu.
