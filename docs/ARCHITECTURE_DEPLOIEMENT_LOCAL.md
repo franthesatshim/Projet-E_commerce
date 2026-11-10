@@ -4,7 +4,7 @@
 
 L'équipe a validé une application web avec :
 - Frontend : HTML, CSS et JavaScript (responsable : Jephte).
-- Backend : PHP 8+ avec PDO (responsable : Kandu Gregory).
+- Backend : PHP 8.1+ avec PDO (responsable : Kandu Gregory).
 - Base de données : MySQL/MariaDB (responsable backend).
 - Serveur local : Apache via XAMPP.
 
