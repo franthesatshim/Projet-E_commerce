@@ -14,7 +14,7 @@ Les deux développeurs collaborent sur les contrats API et les tests d'intégrat
 ## Technologies
 
 - Frontend : HTML5, CSS3, JavaScript.
-- Backend : PHP 8+ (PDO).
+- Backend : PHP 8.1+ (PDO).
 - Base de données : MySQL 8+ ou MariaDB compatible.
 - Environnement local : XAMPP (Apache, PHP, MySQL/MariaDB, phpMyAdmin).
 - Versionnement : Git et GitHub.
