@@ -27,49 +27,53 @@ class AdminWorkflowTest extends TestCase
     {
         $admin = $this->makeUser('admin');
         $customer = $this->makeUser('customer');
-        $product = $this->makeProduct(stock: 3);
-
-        $order = Order::create([
-            'user_id' => $customer->id,
-            'number' => 'CMD-TEST-'.uniqid(),
-            'currency' => 'USD',
-            'subtotal' => 40,
-            'shipping_fee' => 0,
-            'total' => 40,
-            'status' => 'pending',
-            'payment_status' => 'pending',
-            'payment_method' => 'cash_on_delivery',
-            'shipping_name' => 'Client Test',
-            'shipping_phone' => '+243900000000',
-            'shipping_address' => '123 avenue de test',
-            'shipping_city' => 'Lubumbashi',
-        ]);
-
-        $order->items()->create([
-            'product_id' => $product->id,
-            'product_name' => $product->name,
-            'unit_price' => 20,
-            'quantity' => 2,
-            'line_total' => 40,
-        ]);
-
-        Payment::create([
-            'order_id' => $order->id,
-            'method' => 'cash_on_delivery',
-            'amount' => 40,
-            'currency' => 'USD',
-            'status' => 'pending',
-        ]);
-
-        // Le stock est déjà diminué au moment où la commande est passée.
-        $product->update(['stock' => 1]);
+        $product = $this->makeProduct(stock: 1);
+        $order = $this->makeOrder($customer, $product, 'pending', 'pending');
 
         $payload = ['status' => 'cancelled', 'payment_status' => 'pending'];
-        $this->actingAs($admin)->patch(route('admin.orders.update', $order), $payload)->assertRedirect();
+        $this->actingAs($admin)
+            ->patch(route('admin.orders.update', $order), $payload)
+            ->assertRedirect();
+
         $this->assertSame(3, $product->fresh()->stock);
 
         $this->patch(route('admin.orders.update', $order), $payload)->assertRedirect();
         $this->assertSame(3, $product->fresh()->stock);
+    }
+
+    public function test_paid_order_cannot_be_cancelled_without_refund(): void
+    {
+        $admin = $this->makeUser('admin');
+        $customer = $this->makeUser('customer');
+        $product = $this->makeProduct(stock: 1);
+        $order = $this->makeOrder($customer, $product, 'pending', 'paid');
+
+        $this->actingAs($admin)
+            ->from(route('admin.orders'))
+            ->patch(route('admin.orders.update', $order), [
+                'status' => 'cancelled',
+                'payment_status' => 'paid',
+            ])
+            ->assertSessionHasErrors('payment_status');
+
+        $this->assertSame('pending', $order->fresh()->status);
+        $this->assertSame(1, $product->fresh()->stock);
+    }
+
+    public function test_admin_cannot_skip_order_statuses(): void
+    {
+        $admin = $this->makeUser('admin');
+        $customer = $this->makeUser('customer');
+        $product = $this->makeProduct(stock: 1);
+        $order = $this->makeOrder($customer, $product, 'pending', 'pending');
+
+        $this->actingAs($admin)
+            ->from(route('admin.orders'))
+            ->patch(route('admin.orders.update', $order), [
+                'status' => 'delivered',
+                'payment_status' => 'pending',
+            ])
+            ->assertSessionHasErrors('status');
     }
 
     public function test_admin_can_approve_a_customer_review(): void
@@ -121,5 +125,43 @@ class AdminWorkflowTest extends TestCase
             'condition' => 'new',
             'is_active' => true,
         ]);
+    }
+
+    private function makeOrder(User $customer, Product $product, string $status, string $paymentStatus): Order
+    {
+        $order = Order::create([
+            'user_id' => $customer->id,
+            'number' => 'CMD-TEST-'.uniqid(),
+            'currency' => 'USD',
+            'subtotal' => 40,
+            'shipping_fee' => 0,
+            'total' => 40,
+            'status' => $status,
+            'payment_status' => $paymentStatus,
+            'payment_method' => 'cash_on_delivery',
+            'shipping_name' => 'Client Test',
+            'shipping_phone' => '+243900000000',
+            'shipping_address' => '123 avenue de test',
+            'shipping_city' => 'Lubumbashi',
+        ]);
+
+        $order->items()->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'unit_price' => 20,
+            'quantity' => 2,
+            'line_total' => 40,
+        ]);
+
+        Payment::create([
+            'order_id' => $order->id,
+            'method' => 'cash_on_delivery',
+            'amount' => 40,
+            'currency' => 'USD',
+            'status' => $paymentStatus,
+            'paid_at' => $paymentStatus === 'paid' ? now() : null,
+        ]);
+
+        return $order;
     }
 }

@@ -81,13 +81,50 @@ class AdminController extends Controller
         DB::transaction(function () use ($data, $order) {
             $lockedOrder = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
-            if ($lockedOrder->status === 'cancelled' && $data['status'] !== 'cancelled') {
+            $allowedTransitions = [
+                'pending' => ['confirmed', 'cancelled'],
+                'confirmed' => ['processing', 'cancelled'],
+                'processing' => ['shipped', 'cancelled'],
+                'shipped' => ['delivered'],
+                'delivered' => [],
+                'cancelled' => [],
+            ];
+
+            if (
+                $data['status'] !== $lockedOrder->status
+                && ! in_array($data['status'], $allowedTransitions[$lockedOrder->status] ?? [], true)
+            ) {
                 throw ValidationException::withMessages([
-                    'status' => 'Une commande annulée ne peut pas être réactivée. Créez une nouvelle commande.',
+                    'status' => 'Cette transition de commande n’est pas autorisée.',
                 ]);
             }
 
-            // Le stock est restitué une seule fois lors du premier passage à annulée.
+            if ($lockedOrder->payment_status === 'paid' && $data['status'] === 'cancelled'
+                && $data['payment_status'] !== 'refunded') {
+                throw ValidationException::withMessages([
+                    'payment_status' => 'Remboursez le paiement avant d’annuler cette commande.',
+                ]);
+            }
+
+            if ($data['payment_status'] === 'paid' && $data['status'] === 'cancelled') {
+                throw ValidationException::withMessages([
+                    'payment_status' => 'Une commande annulée ne peut pas être marquée comme payée.',
+                ]);
+            }
+
+            if ($lockedOrder->payment_status === 'refunded' && $data['payment_status'] !== 'refunded') {
+                throw ValidationException::withMessages([
+                    'payment_status' => 'Un paiement remboursé ne peut pas être réactivé.',
+                ]);
+            }
+
+            if ($lockedOrder->payment_status === 'failed' && $data['payment_status'] === 'refunded') {
+                throw ValidationException::withMessages([
+                    'payment_status' => 'Un paiement échoué ne peut pas être remboursé.',
+                ]);
+            }
+
+            // Restitution unique du stock au premier passage à l'état annulé.
             if ($lockedOrder->status !== 'cancelled' && $data['status'] === 'cancelled') {
                 foreach ($lockedOrder->items as $item) {
                     if ($item->product_id !== null) {
@@ -105,7 +142,7 @@ class AdminController extends Controller
                     'status' => $data['payment_status'],
                     'paid_at' => $data['payment_status'] === 'paid'
                         ? ($payment->paid_at ?? now())
-                        : ($data['payment_status'] === 'refunded' ? $payment->paid_at : null),
+                        : null,
                 ]);
             }
         }, 3);
@@ -116,7 +153,10 @@ class AdminController extends Controller
     public function reviews()
     {
         return view('admin.reviews', [
-            'reviews' => Review::with(['user', 'product'])->where('is_approved', false)->latest()->paginate(20),
+            'reviews' => Review::with(['user', 'product'])
+                ->where('is_approved', false)
+                ->latest()
+                ->paginate(20),
         ]);
     }
 
@@ -126,6 +166,7 @@ class AdminController extends Controller
 
         if ($data['action'] === 'approve') {
             $review->update(['is_approved' => true]);
+
             return back()->with('success', 'Avis publié.');
         }
 
