@@ -9,8 +9,9 @@ try {
     $category = trim((string)($_GET['category'] ?? ''));
     $search = trim((string)($_GET['q'] ?? ''));
 
-    $sql = 'SELECT p.id, p.name, p.description, p.price, p.stock, p.image_path,
-                   c.name AS category
+    $sql = 'SELECT p.id, p.name, p.description,
+                   p.price_usd, p.price_cdf, p.stock, p.image_path,
+                   c.name AS category, c.slug AS category_slug
             FROM products p
             LEFT JOIN categories c ON c.id = p.category_id
             WHERE p.is_active = 1';
@@ -29,7 +30,11 @@ try {
     $statement = $pdo->prepare($sql);
     $statement->execute($params);
 
-    jsonResponse(['success' => true, 'data' => $statement->fetchAll()]);
+    jsonResponse([
+        'success' => true,
+        'supported_currencies' => ['USD', 'CDF'],
+        'data' => $statement->fetchAll(),
+    ]);
 } catch (Throwable $exception) {
     error_log($exception->getMessage());
     jsonResponse(['success' => false, 'message' => 'Impossible de charger les produits.'], 500);

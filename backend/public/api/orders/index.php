@@ -9,6 +9,7 @@ try {
     $statement = getPDO()->prepare(
         'SELECT
             o.id AS order_id,
+            o.currency,
             o.total_amount,
             o.shipping_address,
             o.status,
@@ -32,6 +33,7 @@ try {
         if (!isset($orders[$orderId])) {
             $orders[$orderId] = [
                 'id' => $orderId,
+                'currency' => $row['currency'],
                 'total_amount' => $row['total_amount'],
                 'shipping_address' => $row['shipping_address'],
                 'status' => $row['status'],

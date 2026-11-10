@@ -1,88 +1,62 @@
 # ShopNow — Projet e-commerce
 
-Application e-commerce d'équipe : **HTML, CSS, JavaScript, PHP 8.1+ et MySQL/MariaDB**, développée sous XAMPP.
+Application d'équipe : **HTML, CSS, JavaScript, PHP 8.1+ et MySQL/MariaDB**, développée sous XAMPP.
 
-## Équipe et responsabilités
-
-| Membre | Rôle | Dossiers principaux |
+## Équipe
+| Membre | Rôle | Dossiers |
 |---|---|---|
 | Jephte | Développeur frontend | `frontend/` |
 | Kandu Gregory | Développeur backend | `backend/`, `database/` |
 
-Le navigateur communique avec PHP via HTTP/JSON. Il ne se connecte jamais directement à MySQL.
+Le navigateur communique avec PHP via HTTP/JSON ; il ne se connecte jamais directement à MySQL.
 
 ## Technologies
 - Frontend : HTML5, CSS3, JavaScript.
 - Backend : PHP 8.1+, PDO.
 - Base : MySQL 8+ ou MariaDB compatible.
-- Local : XAMPP (Apache, PHP, MySQL/MariaDB, phpMyAdmin).
-- Versionnement : Git/GitHub.
+- Local : XAMPP.
+
+## Devises
+L'application prend en charge **USD** et **CDF**.
+- Chaque produit possède un prix USD et un prix CDF distincts.
+- Les prix CDF sont initialement NULL dans les données de démonstration : ils doivent être renseignés/validés par l'équipe avant d'accepter une commande en CDF.
+- Aucun taux de change n'est supposé ni codé en dur.
+- Une commande conserve sa devise, son total et ses prix unitaires historiques ; elle ne mélange jamais USD et CDF.
 
 ## Structure
-
 ```text
 Projet-E_commerce/
-├── frontend/                 # Jephte : interface et interactions navigateur
-│   ├── index.html
-│   ├── styles.css
-│   └── app.js
-├── backend/                  # Kandu : logique serveur PHP
-│   ├── config/
-│   ├── src/
-│   └── public/api/
-├── database/schema.sql       # Tables et données de démonstration
-├── docs/                     # Architecture et contrat frontend/backend
-├── .env.example
-└── .gitignore
+├── frontend/                 # Jephte : interface navigateur
+├── backend/                  # Kandu : PHP, API, sessions, règles métier
+├── database/schema.sql       # Schéma neuf et données de démonstration
+├── database/migrations/      # Migrations pour les bases existantes
+└── docs/                     # Architecture et contrat d'API
 ```
 
-## Installation locale (XAMPP)
-
+## Installation neuve sous XAMPP
 1. Placer le dépôt dans `C:\\xampp\\htdocs\\Projet-E_commerce\\`.
-2. Démarrer Apache et MySQL depuis XAMPP.
+2. Démarrer Apache et MySQL.
 3. Importer `database/schema.sql` dans phpMyAdmin.
-4. Définir dans l'environnement PHP : `DB_HOST=127.0.0.1`, `DB_NAME=ecommerce_db`, `DB_USER=root`, `DB_PASS=` (configuration XAMPP locale uniquement). `.env.example` est un modèle ; PHP ne le charge pas automatiquement.
+4. Configurer les variables PHP DB_HOST, DB_NAME, DB_USER et DB_PASS (voir `.env.example`; ce modèle n'est pas chargé automatiquement).
 5. Ouvrir `http://localhost/Projet-E_commerce/`.
 
-## API disponibles
+## Mise à jour d'une base existante
+Faire une sauvegarde puis exécuter une seule fois `database/migrations/20261110_add_usd_cdf_currency.sql` dans phpMyAdmin. Cette migration reprend les anciens prix comme USD et ajoute un champ CDF non renseigné. Vérifier le résultat avant de reprendre les tests.
 
-Base locale : `http://localhost/Projet-E_commerce/backend/public/api`
+## API
+Base locale : `http://localhost/Projet-E_commerce/backend/public/api`.
 
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| GET | `/health.php` | Public | Vérifie l'API et la connexion MySQL |
-| GET | `/products.php` | Public | Liste des produits actifs |
-| GET | `/products.php?q=casque` | Public | Recherche |
-| GET | `/products.php?category=audio` | Public | Filtre par slug de catégorie |
-| GET | `/categories.php` | Public | Liste des catégories et nombre de produits |
-| POST | `/auth/register.php` | Public | Crée un compte client |
-| POST | `/auth/login.php` | Public | Ouvre une session |
-| GET | `/auth/me.php` | Public | État de la session et utilisateur courant |
-| POST | `/auth/logout.php` | Session | Ferme la session |
-| POST | `/orders/create.php` | Session | Enregistre une commande |
-| GET | `/orders/index.php` | Session | Historique des commandes du client connecté |
+- `GET /health.php` : état de l'API et MySQL.
+- `GET /products.php` : produits avec `price_usd` et `price_cdf`.
+- `GET /categories.php` : catégories.
+- `POST /auth/register.php`, `POST /auth/login.php`, `GET /auth/me.php`, `POST /auth/logout.php`.
+- `POST /orders/create.php` : commande authentifiée, JSON contenant `currency: "USD"` ou `"CDF"`, `shipping_address` et `items`.
+- `GET /orders/index.php` : historique avec devise de chaque commande.
 
-Les routes POST attendent du JSON avec `Content-Type: application/json`. Pour créer une commande, envoyer uniquement `product_id` et `quantity` par article, plus `shipping_address`. PHP recalcule les prix depuis MySQL et contrôle le stock.
+Le backend choisit le prix dans la devise demandée, recalcule les totaux à partir de MySQL et vérifie le stock. Si le prix de la devise choisie est absent, la commande est refusée avec un message explicite.
 
-## État du développement
+## État
+Les API backend sont en cours de construction. Le frontend reste un prototype et n'est pas encore connecté aux API. Aucun paiement réel n'est intégré. Tests XAMPP, CSRF, limitation des tentatives, tests automatisés, HTTPS et audit restent nécessaires avant production.
 
-Le backend comprend une connexion PDO, les API produits/catégories, inscription/connexion/déconnexion, lecture de session, création et historique des commandes, ainsi qu'une route de diagnostic.
-
-**Le frontend reste le prototype précédent et n'est pas encore intégré aux API.** Son catalogue et son panier/favoris utilisent encore JavaScript et `localStorage`. Jephte doit connecter progressivement les écrans aux routes documentées.
-
-Ce dépôt est un socle de développement local. Aucun paiement réel n'est intégré et les tests sur une instance XAMPP réelle restent à effectuer.
-
-## Sécurité — travaux avant mise en production
-
-- Mots de passe hachés via `password_hash()`, vérifiés via `password_verify()`.
-- Requêtes SQL paramétrées avec PDO.
-- Configuration secrète exclue du dépôt ; ne jamais commiter de vrai mot de passe.
-- Le rôle administrateur ne doit jamais être attribué depuis une requête publique.
-- À compléter avant production : protection CSRF des actions de session, limitation des tentatives de connexion, tests automatisés, HTTPS, journalisation, sauvegardes, gestion d'administration et audit de sécurité.
-
-## Git et collaboration
-
-- Jephte travaille dans `frontend/`.
-- Kandu travaille dans `backend/` et `database/`.
-- Toute modification de route ou de format JSON doit être documentée dans `docs/COLLABORATION_FRONTEND_BACKEND.md`.
-- Utiliser des branches de fonctionnalité et des Pull Requests vers `main`.
+## Collaboration Git
+Jephte intervient principalement dans `frontend/`. Kandu intervient principalement dans `backend/` et `database/`. Les changements de contrat sont consignés dans `docs/COLLABORATION_FRONTEND_BACKEND.md`. Utiliser des branches et Pull Requests vers `main`.

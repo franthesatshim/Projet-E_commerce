@@ -21,20 +21,24 @@ CREATE TABLE IF NOT EXISTS categories (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- Les prix USD et CDF sont saisis indépendamment par l'administrateur.
+-- NULL signifie que le prix dans cette devise n'a pas encore été défini.
 CREATE TABLE IF NOT EXISTS products (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     category_id BIGINT UNSIGNED NULL,
     name VARCHAR(180) NOT NULL,
     slug VARCHAR(200) NOT NULL UNIQUE,
     description TEXT NULL,
-    price DECIMAL(12,2) NOT NULL,
+    price_usd DECIMAL(14,2) NOT NULL,
+    price_cdf DECIMAL(18,2) NULL,
     stock INT UNSIGNED NOT NULL DEFAULT 0,
     image_path VARCHAR(255) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
-    CONSTRAINT chk_products_price CHECK (price >= 0),
+    CONSTRAINT chk_products_price_usd CHECK (price_usd >= 0),
+    CONSTRAINT chk_products_price_cdf CHECK (price_cdf IS NULL OR price_cdf >= 0),
     INDEX idx_products_category_active (category_id, is_active),
     INDEX idx_products_name (name)
 ) ENGINE=InnoDB;
@@ -42,7 +46,8 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS orders (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
-    total_amount DECIMAL(12,2) NOT NULL,
+    currency ENUM('USD', 'CDF') NOT NULL DEFAULT 'USD',
+    total_amount DECIMAL(18,2) NOT NULL,
     shipping_address VARCHAR(500) NOT NULL,
     status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -56,7 +61,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     order_id BIGINT UNSIGNED NOT NULL,
     product_id BIGINT UNSIGNED NULL,
     product_name VARCHAR(180) NOT NULL,
-    unit_price DECIMAL(12,2) NOT NULL,
+    unit_price DECIMAL(18,2) NOT NULL,
     quantity INT UNSIGNED NOT NULL,
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
@@ -81,10 +86,12 @@ INSERT IGNORE INTO categories (name, slug) VALUES
 ('Mode', 'mode'),
 ('Accessoires', 'accessoires');
 
-INSERT IGNORE INTO products (category_id, name, slug, description, price, stock, is_active)
-SELECT c.id, p.name, p.slug, p.description, p.price, p.stock, 1
+-- Les prix de démonstration sont fournis en USD.
+-- Les prix CDF restent NULL jusqu'à leur saisie explicite (aucun taux de change n'est supposé).
+INSERT IGNORE INTO products (category_id, name, slug, description, price_usd, price_cdf, stock, is_active)
+SELECT c.id, p.name, p.slug, p.description, p.price_usd, NULL, p.stock, 1
 FROM (
-    SELECT 'Informatique' category, 'Ordinateur portable' name, 'ordinateur-portable' slug, 'Un ordinateur puissant et léger, idéal pour le travail, les études et le divertissement.' description, 699.00 price, 15 stock
+    SELECT 'Informatique' category, 'Ordinateur portable' name, 'ordinateur-portable' slug, 'Un ordinateur puissant et léger, idéal pour le travail, les études et le divertissement.' description, 699.00 price_usd, 15 stock
     UNION ALL SELECT 'Téléphones', 'Smartphone 5G', 'smartphone-5g', 'Un smartphone élégant, rapide et prêt pour la connectivité 5G.', 499.00, 20
     UNION ALL SELECT 'Audio', 'Casque sans fil', 'casque-sans-fil', 'Profitez d’un son immersif et d’un confort optimal au quotidien.', 129.00, 30
     UNION ALL SELECT 'Accessoires', 'Montre connectée', 'montre-connectee', 'Suivez votre activité et restez connecté directement depuis votre poignet.', 199.00, 12
