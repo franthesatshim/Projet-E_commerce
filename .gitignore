@@ -1,9 +1,18 @@
-# Secrets et configuration locale
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/bootstrap/cache/*.php
 .env
-.env.*
-!.env.example
-
-# Logs et fichiers système
-*.log
+.env.*.local
+.phpunit.cache
+/.idea
+/.vscode
 .DS_Store
 Thumbs.db
