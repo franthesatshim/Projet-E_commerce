@@ -1,2 +1,0 @@
-# Le code interne et la configuration backend ne doivent pas être servis par Apache.
-Require all denied
