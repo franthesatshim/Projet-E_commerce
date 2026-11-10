@@ -1,2 +1,8 @@
 <?php
-namespace Tests\Feature;use Tests\TestCase;class HomeTest extends TestCase{public function test_homepage_is_available():void{$this->get('/')->assertOk();}}
+namespace Tests\Feature;
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+class HomeTest extends TestCase{
+ use RefreshDatabase;
+ public function test_homepage_is_available():void{$this->get('/')->assertOk();}
+}
