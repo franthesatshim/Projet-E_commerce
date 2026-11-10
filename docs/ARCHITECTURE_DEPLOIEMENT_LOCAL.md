@@ -1,174 +1,270 @@
-# Architecture de déploiement local — Projet E-commerce
+# Architecture globale de déploiement local — Site E-commerce
 
-> **Statut : proposition d'infrastructure pour la démonstration locale.**  
-> Cette architecture décrit le déploiement cible demandé à l'équipe. Elle ne confirme pas encore la technologie réellement utilisée par l'application : le MainDev doit valider le langage, le framework, le moteur de base de données et les commandes de lancement avant l'installation définitive.
+## 1. Objectif du déploiement
 
-## 1. Objectif et périmètre
+L'équipe prévoit de développer un site e-commerce avec **HTML, CSS et JavaScript**, puis de l'héberger localement sur **un seul ordinateur à l'aide de XAMPP**.
 
-Déployer l'application e-commerce sous forme **monolithique sur un seul ordinateur**. Cet ordinateur héberge l'application et sa base de données. Les membres de l'équipe et les utilisateurs de démonstration y accèdent depuis un navigateur, sur le même ordinateur ou via le réseau local (LAN).
+L'ordinateur choisi jouera le rôle de serveur local. Il hébergera les fichiers du site et, si l'application utilise une base de données, le service de base de données fourni par XAMPP.
 
-Cette solution convient à un projet académique, aux tests et à une démonstration sur un réseau local. Elle n'est pas une architecture de production exposée directement à Internet.
+Le site sera consulté avec un navigateur web. Pour une démonstration en réseau local, les autres appareils pourront accéder au site via l'adresse IP locale de cet ordinateur.
 
-## 2. Architecture logique
+> **Point technique important :** HTML, CSS et JavaScript exécutés dans le navigateur suffisent à afficher un site, mais ne constituent pas à eux seuls un backend sécurisé pour gérer les comptes, les commandes et les données persistantes. Pour une véritable application e-commerce connectée à MySQL/MariaDB, il faudra un backend côté serveur (par exemple PHP avec XAMPP). Le navigateur ne doit jamais se connecter directement à MySQL. Cette architecture prévoit donc le serveur et la base de données, mais le MainDev doit confirmer si PHP sera utilisé et définir les traitements serveur.
 
-```text
-                 UTILISATEURS
-          (navigateur sur le PC / LAN)
-                       |
-                       | HTTP (80) ou HTTPS (443)
-                       v
-       +--------------------------------------+
-       |       ORDINATEUR SERVEUR LOCAL       |
-       |                                      |
-       |  +--------------------------------+  |
-       |  | Serveur Web                    |  |
-       |  | Apache / Nginx / serveur adapté|  |
-       |  +---------------+----------------+  |
-       |                  |                   |
-       |  +---------------v----------------+  |
-       |  | APPLICATION MONOLITHIQUE       |  |
-       |  | Interface + Backend + logique  |  |
-       |  | métier + authentification      |  |
-       |  +---------------+----------------+  |
-       |                  |                   |
-       |  +---------------v----------------+  |
-       |  | Base de données                |  |
-       |  | MySQL / MariaDB / moteur validé|  |
-       |  +--------------------------------+  |
-       |                                      |
-       |  +--------------------------------+  |
-       |  | Fichiers téléversés et logs    |  |
-       |  +--------------------------------+  |
-       |                                      |
-       |  +--------------------------------+  |
-       |  | Sauvegardes locales            |  |
-       |  +--------------------------------+  |
-       +--------------------------------------+
-```
+## 2. Architecture globale
 
-**Principe :** le navigateur envoie les requêtes au serveur web. Celui-ci transmet les demandes à l'application monolithique. L'application applique les règles métier et lit/écrit les données dans la base. Le navigateur ne se connecte jamais directement à la base de données.
+~~~text
+                  UTILISATEURS
+             (Chrome / Firefox / Edge)
+                         |
+                         | HTTP
+                         | http://localhost
+                         | ou http://IP-LOCALE
+                         v
+        +----------------------------------------+
+        |           ORDINATEUR SERVEUR           |
+        |                                        |
+        |                 XAMPP                  |
+        |                                        |
+        |  +----------------------------------+  |
+        |  | APACHE — Serveur Web             |  |
+        |  | Port HTTP : 80                   |  |
+        |  | (HTTPS 443 si configuré)         |  |
+        |  +----------------+-----------------+  |
+        |                   |                    |
+        |                   v                    |
+        |  +----------------------------------+  |
+        |  | SITE E-COMMERCE                  |  |
+        |  | HTML : structure des pages       |  |
+        |  | CSS : présentation et design     |  |
+        |  | JavaScript : interactions client |  |
+        |  | PHP : backend éventuel à valider |  |
+        |  +----------------+-----------------+  |
+        |                   |                    |
+        |           Requêtes serveur             |
+        |           si backend PHP               |
+        |                   |                    |
+        |                   v                    |
+        |  +----------------------------------+  |
+        |  | MARIADB / MYSQL                  |  |
+        |  | Port par défaut : 3306           |  |
+        |  | Données : utilisateurs, produits,| |
+        |  | catégories, paniers, commandes   |  |
+        |  +----------------------------------+  |
+        |                                        |
+        |  +----------------------------------+  |
+        |  | phpMyAdmin                       |  |
+        |  | Administration de la base        |  |
+        |  | (usage local et protégé)         |  |
+        |  +----------------------------------+  |
+        |                                        |
+        |  +----------------------------------+  |
+        |  | Fichiers du site / images / logs |  |
+        |  +----------------------------------+  |
+        |                                        |
+        |  +----------------------------------+  |
+        |  | Sauvegardes de la base et fichiers| |
+        |  +----------------------------------+  |
+        +----------------------------------------+
+~~~
 
-## 3. Composants à prévoir
+**Flux de fonctionnement :**
 
-| Composant | Rôle | Décision à confirmer |
+1. L'utilisateur ouvre le navigateur et saisit l'adresse du site.
+2. Apache, démarré depuis XAMPP, reçoit la requête HTTP.
+3. Apache sert les fichiers HTML, CSS et JavaScript.
+4. JavaScript gère les interactions dans le navigateur.
+5. Si une opération nécessite un traitement serveur (connexion, création de commande, enregistrement d'un produit), le navigateur envoie une requête au backend PHP, si celui-ci est retenu.
+6. Le backend PHP communique avec MySQL/MariaDB et renvoie une réponse au navigateur.
+7. Le navigateur affiche le résultat à l'utilisateur.
+
+## 3. Composants de l'infrastructure
+
+| Composant | Technologie prévue | Fonction |
 |---|---|---|
-| Ordinateur serveur | Héberge tous les composants | PC disponible, alimentation et espace disque |
-| Système d'exploitation | Exécute l'environnement | Windows ou Linux selon le PC de démonstration |
-| Serveur web | Reçoit les requêtes HTTP/HTTPS | Apache, Nginx ou serveur intégré selon la stack |
-| Application | Interface, backend et logique métier dans un même projet | Langage/framework du MainDev |
-| Base de données | Stocke utilisateurs, produits, commandes, etc. | MySQL/MariaDB ou autre moteur choisi |
-| Stockage | Conserve images et documents envoyés | Dossier persistant hors des fichiers temporaires |
-| Sauvegarde | Permet de restaurer les données | Export DB + copie des fichiers téléversés |
+| Ordinateur | Un PC Windows ou Linux compatible | Héberger le site et les services |
+| Serveur web | Apache (XAMPP) | Recevoir les requêtes et servir le site |
+| Structure des pages | HTML5 | Définir le contenu et les éléments |
+| Présentation | CSS3 | Définir les styles et la mise en page |
+| Interactions | JavaScript | Gérer les interactions côté navigateur |
+| Backend | PHP si validé par le MainDev | Traiter les opérations côté serveur |
+| Base de données | MariaDB/MySQL fourni avec XAMPP | Conserver les données du site |
+| Administration BD | phpMyAdmin | Créer, consulter et sauvegarder la base |
+| Navigateur | Chrome, Firefox ou Edge | Accéder au site |
+| Versionnement | Git et GitHub | Partager et suivre le code source |
 
-### Environnement indicatif
+XAMPP regroupe notamment Apache, PHP, MariaDB et phpMyAdmin selon la version distribuée. Le panneau de contrôle XAMPP permet de démarrer et d'arrêter les services nécessaires.
 
-Si le MainDev confirme **PHP + MySQL**, XAMPP (Apache, PHP et MySQL/MariaDB selon la version) peut être une solution simple sur Windows. Si le projet utilise une autre stack, il faudra installer l'environnement correspondant plutôt que d'imposer XAMPP.
+## 4. Organisation des fichiers sur l'ordinateur serveur
 
-## 4. Vue physique et accès réseau
+Le dossier du site sera placé dans le répertoire web d'Apache, généralement :
 
-- **Sur le même ordinateur :** ouvrir l'application avec `http://localhost` ou l'adresse configurée.
-- **Depuis un autre appareil du même réseau :** utiliser l'adresse IP locale du PC serveur, par exemple `http://192.168.x.x` (remplacer par l'adresse réelle).
-- Le PC serveur doit rester allumé et connecté au réseau pendant la démonstration.
-- Réserver l'accès entrant au port web nécessaire (80 ou 443) et au réseau local autorisé.
-- Le port de la base de données (souvent 3306 pour MySQL) reste accessible uniquement depuis la machine locale ; ne pas l'exposer au LAN ou à Internet sans nécessité et configuration sécurisée.
+- Windows : **C:\xampp\htdocs\Projet-E_commerce\**
+- Linux : le répertoire **htdocs** de l'installation XAMPP, selon le chemin choisi.
 
-## 5. Ressources matérielles indicatives
+Exemple d'organisation cible, à adapter aux fichiers réellement créés par le MainDev :
 
-Pour une petite démonstration avec peu d'utilisateurs simultanés :
+~~~text
+C:\xampp\
+└── htdocs\
+    └── Projet-E_commerce\
+        ├── index.html
+        ├── pages\
+        │   ├── produits.html
+        │   ├── panier.html
+        │   └── connexion.html
+        ├── css\
+        │   └── style.css
+        ├── js\
+        │   └── script.js
+        ├── images\
+        │   └── produits\
+        ├── php\                 (si backend PHP retenu)
+        │   ├── config.php
+        │   └── ...
+        └── database\            (scripts SQL de préparation)
+            └── schema.sql
+~~~
 
-- Minimum pratique : processeur 2 cœurs, 4 Go de RAM et espace SSD disponible.
-- Recommandé : processeur 4 cœurs, 8 Go de RAM et SSD.
-- Prévoir de l'espace supplémentaire pour la base de données, les images produits, les journaux et les sauvegardes.
+Cette arborescence est un exemple de classement, pas une obligation de renommer les fichiers déjà développés. Les secrets et mots de passe ne doivent pas être enregistrés dans un fichier publié sur GitHub.
 
-Ces valeurs sont des repères de départ, pas des exigences mesurées de l'application.
+## 5. Configuration réseau et adresses d'accès
 
-## 6. Organisation des fichiers proposée
+### Accès depuis l'ordinateur serveur
 
-À adapter à la structure réellement produite par le MainDev. Ne pas déplacer ou renommer les dossiers du code sans son accord.
+- Site : **http://localhost/Projet-E_commerce/**
+- phpMyAdmin : **http://localhost/phpmyadmin/** (administration locale uniquement)
 
-```text
-Projet-E_commerce/
-├── README.md
-├── docs/
-│   └── ARCHITECTURE_DEPLOIEMENT_LOCAL.md
-├── application/              # code réel de l'application (à confirmer)
-├── database/                 # scripts SQL / migrations (si utilisés)
-├── storage/                  # fichiers persistants (si nécessaires)
-└── .env.example              # modèle sans secrets, si la stack utilise .env
-```
+### Accès depuis les autres ordinateurs du même réseau
 
-Les dossiers `application/`, `database/`, `storage/` et le fichier `.env.example` sont une **structure cible illustrative** : ne les créer que lorsque leur contenu et leur utilité auront été confirmés avec le MainDev. Les fichiers réels de l'application doivent rester conformes au dépôt.
+1. Connecter le PC serveur et les appareils clients au même réseau local (Wi-Fi ou câble).
+2. Trouver l'adresse IPv4 locale du PC serveur avec la commande **ipconfig** sous Windows.
+3. Depuis un autre appareil, ouvrir **http://ADRESSE-IP/Projet-E_commerce/**, en remplaçant l'exemple par l'adresse IPv4 réelle.
+4. Autoriser Apache dans le pare-feu Windows uniquement pour le réseau privé/local utilisé.
 
-## 7. Étapes de déploiement
+Le PC serveur doit rester allumé et Apache doit être démarré pour que les autres appareils accèdent au site. Une adresse IP locale peut changer ; une réservation DHCP ou une adresse fixe peut être prévue si nécessaire.
 
-1. **Valider la stack avec le MainDev :** langage, framework, version requise, base de données, dépendances et commande de démarrage.
-2. **Préparer le PC :** vérifier le système, les ressources, l'espace disque et les droits d'installation.
-3. **Récupérer le projet :** cloner le dépôt GitHub sur le PC serveur et choisir une version/branche stable pour la démonstration.
-4. **Installer les dépendances :** suivre les instructions officielles du framework et celles ajoutées par le MainDev au dépôt.
-5. **Configurer l'environnement :** renseigner les paramètres locaux dans un fichier de configuration non versionné. Ne jamais publier mots de passe, clés ou secrets sur GitHub.
-6. **Préparer la base :** créer la base et un utilisateur applicatif dédié ; exécuter les migrations ou le script SQL fourni par le MainDev.
-7. **Configurer le serveur web :** faire pointer le serveur vers le point d'entrée public de l'application ; interdire l'accès web aux fichiers de configuration et aux sauvegardes.
-8. **Démarrer les services :** démarrer le serveur web et la base, puis lancer l'application selon la stack.
-9. **Tester :** parcourir les scénarios fonctionnels et les contrôles de sécurité de la section 9.
-10. **Documenter :** noter les versions installées, les commandes réellement utilisées, l'adresse d'accès et la procédure de redémarrage.
+### Ports utilisés
 
-## 8. Sécurité et sauvegardes
+| Service | Port habituel | Règle |
+|---|---:|---|
+| Apache HTTP | 80 | Autoriser uniquement les accès nécessaires |
+| Apache HTTPS | 443 | À utiliser si HTTPS est configuré |
+| MySQL/MariaDB | 3306 | Garder accessible uniquement depuis le PC serveur |
+| phpMyAdmin | Via Apache | Ne pas rendre son accès public |
 
-- Utiliser des mots de passe forts pour les comptes administrateur et base de données.
-- Créer un compte de base de données réservé à l'application, avec les seuls droits nécessaires ; éviter le compte administrateur/root dans la configuration applicative.
-- Ne pas publier les fichiers de configuration contenant des secrets ; ajouter les fichiers locaux sensibles à `.gitignore`.
-- Ne pas exposer phpMyAdmin ou l'interface d'administration de la base au réseau sans contrôle d'accès.
-- Autoriser uniquement les ports nécessaires dans le pare-feu.
-- Conserver les sauvegardes hors du dossier servi publiquement par le serveur web.
-- Avant chaque démonstration importante, effectuer une sauvegarde de la base et des fichiers téléversés.
-- Tester au moins une restauration : une sauvegarde non testée n'est pas une garantie de récupération.
+Ne pas exposer directement le port 3306 à Internet ni ouvrir des ports inutiles.
 
-Pour un usage régulier, définir une fréquence (par exemple quotidienne pendant la période de développement) et conserver au moins une copie sur un autre support. Les sauvegardes présentes uniquement sur le même disque ne protègent pas contre la panne de ce disque.
+## 6. Installation et mise en service de XAMPP
 
-## 9. Plan de tests de validation
+1. Télécharger XAMPP depuis le site officiel Apache Friends : https://www.apachefriends.org/
+2. Installer XAMPP sur le PC choisi.
+3. Ouvrir le XAMPP Control Panel.
+4. Démarrer **Apache**.
+5. Démarrer **MySQL** (le service peut être nommé MySQL dans le panneau même si la distribution utilise MariaDB).
+6. Vérifier Apache avec **http://localhost/**.
+7. Vérifier phpMyAdmin avec **http://localhost/phpmyadmin/**.
+8. Copier ou cloner le projet dans **C:\xampp\htdocs\Projet-E_commerce\**.
+9. Ouvrir **http://localhost/Projet-E_commerce/** dans le navigateur.
 
-| Test | Résultat attendu |
+Si Apache ne démarre pas, vérifier notamment si un autre programme utilise déjà le port 80 ou 443. Ne pas modifier les ports sans documenter le changement et mettre à jour l'adresse d'accès.
+
+**Cas d'un site uniquement HTML/CSS/JavaScript :** Apache suffit pour servir les fichiers statiques. MySQL et phpMyAdmin ne sont pas nécessaires tant qu'aucun backend ne les utilise. Les données conservées uniquement dans le navigateur (par exemple localStorage) ne remplacent pas une base de données partagée et sécurisée.
+
+## 7. Préparation de la base de données (si MySQL/MariaDB est utilisé)
+
+1. Ouvrir phpMyAdmin depuis le PC serveur.
+2. Créer une base de données dédiée au projet, avec un nom choisi par l'équipe (par exemple **ecommerce_db**).
+3. Importer le fichier SQL ou exécuter les scripts fournis par le MainDev.
+4. Créer un compte applicatif dédié avec des droits limités à cette base.
+5. Configurer le backend PHP pour se connecter à la base avec ces paramètres.
+6. Tester une lecture et une écriture depuis l'application.
+
+Les tables exactes doivent provenir de la conception de la base et du code du MainDev. Elles ne sont pas inventées dans ce document.
+
+## 8. Sécurité minimale
+
+- Utiliser cette installation pour le développement et la démonstration locale, pas comme serveur public de production.
+- Ne jamais connecter le JavaScript du navigateur directement à MySQL.
+- Si PHP est utilisé, valider les données côté serveur et utiliser des requêtes préparées pour les accès SQL.
+- Ne pas stocker les mots de passe en clair ; utiliser un mécanisme de hachage adapté côté serveur.
+- Ne pas publier les identifiants de base de données dans le dépôt GitHub.
+- Limiter phpMyAdmin à l'administration locale et protéger les comptes.
+- Garder MySQL/MariaDB accessible uniquement depuis la machine locale.
+- N'autoriser Apache sur le réseau que si le partage LAN est nécessaire.
+- Ne pas utiliser les comptes et mots de passe par défaut pour une démonstration partagée.
+- Maintenir une copie de sauvegarde sur un autre support.
+
+## 9. Sauvegarde et restauration
+
+Avant une démonstration ou une modification importante :
+
+1. Exporter la base de données depuis phpMyAdmin (si elle existe).
+2. Copier les fichiers du projet, notamment les images et autres fichiers ajoutés.
+3. Stocker les sauvegardes dans un dossier qui n'est pas accessible par le serveur web.
+4. Conserver une copie sur un support distinct du disque du PC serveur.
+5. Tester périodiquement la restauration de la base et des fichiers.
+
+Exemple de classement hors du dossier web :
+
+~~~text
+D:\Sauvegardes_Ecommerce\
+├── base_ecommerce_YYYY-MM-DD.sql
+└── fichiers_site_YYYY-MM-DD.zip
+~~~
+
+Le chemin ci-dessus est illustratif : utiliser un support réellement disponible.
+
+## 10. Tests de validation du SysAdmin
+
+| Vérification | Résultat attendu |
 |---|---|
-| Démarrage du PC serveur et des services | Serveur web et base de données démarrent sans erreur |
-| Accès depuis le PC serveur | La page d'accueil s'affiche |
-| Accès depuis un appareil LAN autorisé | L'application est accessible via l'IP locale |
-| Connexion à la base | L'application lit et écrit les données attendues |
-| Catalogue produits | Les produits s'affichent correctement |
-| Panier | Ajout, modification et suppression d'un article fonctionnent |
-| Commande | Le scénario de commande prévu par le backlog fonctionne |
-| Authentification | Les rôles et accès sont contrôlés côté serveur |
-| Fichiers téléversés | Les images/fichiers restent disponibles après redémarrage |
-| Sauvegarde/restauration | Les données peuvent être restaurées |
-| Redémarrage | L'application revient après redémarrage des services |
+| XAMPP démarre | Apache et, si nécessaire, MySQL sont actifs |
+| Page d'accueil | Le site s'ouvre depuis localhost |
+| Fichiers CSS et JavaScript | Le style et les interactions se chargent correctement |
+| Navigation | Les pages et liens fonctionnent |
+| Accès LAN | Un appareil autorisé ouvre le site via l'IP locale |
+| Base de données (si utilisée) | La connexion fonctionne et les données attendues sont présentes |
+| Opérations e-commerce | Les scénarios produits, panier et commandes prévus sont testés |
+| Sécurité | La base n'est pas accessible directement depuis le navigateur ou le LAN |
+| Sauvegarde | L'export de la base et la copie des fichiers sont disponibles |
+| Restauration | Une sauvegarde peut être restaurée |
+| Redémarrage | Le site redevient accessible après redémarrage des services |
 
-Les scénarios doivent être ajustés aux fonctionnalités effectivement prévues dans le Product Backlog.
+## 11. Répartition des responsabilités
 
-## 10. Répartition des responsabilités
-
-| Rôle | Responsabilités liées au déploiement |
+| Rôle | Responsabilités |
 |---|---|
-| Scrum Master / coordination | Planifier les validations, suivre les blocages et faire confirmer les livrables |
-| MainDev | Confirmer la stack, fournir le code exécutable, les dépendances, la configuration exemple et les scripts/migrations de base |
-| Designer | Vérifier l'affichage et l'utilisabilité sur les écrans ciblés |
-| SysAdmin | Préparer le PC, installer et configurer l'environnement, gérer le réseau, les accès, les sauvegardes et exécuter les tests de déploiement |
+| Scrum Master / coordination | Organiser les validations, suivre les tâches et les blocages |
+| MainDev | Développer le site, préciser les besoins backend, fournir les scripts SQL et les instructions de lancement |
+| Designer | Concevoir et vérifier l'interface, la cohérence visuelle et l'affichage responsive |
+| SysAdmin | Installer XAMPP, configurer Apache et MySQL si requis, placer le projet dans htdocs, configurer le réseau, les sauvegardes et réaliser les tests de déploiement |
 
-## 11. Informations à obtenir avant le déploiement réel
+## 12. Points à confirmer par l'équipe
 
-Le SysAdmin doit demander au MainDev de confirmer :
+Avant de considérer l'architecture comme définitive, le MainDev doit confirmer :
 
-1. Quel langage et quel framework sont utilisés ?
-2. Quel moteur et quelle version de base de données ?
-3. Existe-t-il un fichier de dépendances (par exemple `composer.json`, `package.json`, `requirements.txt`) ?
-4. Existe-t-il un script SQL, des migrations ou des données de démonstration ?
-5. Quelle est la commande exacte pour lancer l'application ?
-6. Quel est le dossier public / point d'entrée du serveur web ?
-7. Quels paramètres doivent être définis dans le fichier de configuration ?
-8. Quels comptes de test et quels rôles sont nécessaires ?
+1. Le site sera-t-il uniquement statique (HTML/CSS/JavaScript) ou utilisera-t-il PHP pour le backend ?
+2. MySQL/MariaDB sera-t-il utilisé pour enregistrer les utilisateurs, produits et commandes ?
+3. Quel fichier sera la page d'accueil : **index.html** ou **index.php** ?
+4. Quel script SQL créera la base et ses tables, si une base est nécessaire ?
+5. Quelles fonctionnalités doivent être opérationnelles pendant la démonstration ?
+6. Le site sera-t-il consulté uniquement sur le PC serveur ou aussi depuis les ordinateurs du réseau local ?
 
-## 12. Critères de fin
+## 13. Critères de réussite
 
-Le déploiement local est considéré prêt lorsque l'application démarre sur le PC retenu, est accessible aux utilisateurs autorisés, utilise sa base de données, passe les scénarios fonctionnels prioritaires, résiste à un redémarrage et dispose d'une sauvegarde restaurable.
+Le déploiement local sera validé lorsque :
+
+- le projet est placé dans le répertoire web de XAMPP ;
+- Apache sert correctement le site ;
+- les pages, styles et scripts fonctionnent ;
+- MySQL/MariaDB est opérationnel uniquement si le projet l'utilise ;
+- les fonctionnalités nécessitant un backend sont traitées côté serveur ;
+- les utilisateurs autorisés peuvent accéder au site depuis le PC ou le réseau local prévu ;
+- les sauvegardes et la procédure de restauration sont documentées.
 
 ---
-**Responsable de cette proposition :** SysAdmin  
-**Document à réviser :** après confirmation de la stack et de la structure réelle du code par le MainDev.
+
+**Responsable du document :** SysAdmin  
+**Environnement visé :** HTML, CSS, JavaScript et XAMPP  
+**Nature du déploiement :** local, monolithique, un seul ordinateur  
+**Mise à jour :** à préciser après validation du backend et de la base de données par le MainDev.
