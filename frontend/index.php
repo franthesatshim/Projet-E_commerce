@@ -71,7 +71,7 @@
     <section class="section catalog-section" id="catalogue">
       <div class="section-heading"><div><span class="eyebrow">NOTRE SÉLECTION</span><h2>Nos produits</h2><p class="muted" id="results-count">Découvrez nos meilleures offres.</p></div>
         <label class="sort-control">Trier par :
-          <select id="sort-select"><option value="popular">Plus populaires</option><option value="price-asc">Prix croissant</option><option value="price-desc">Prix décroissant</option><option value="name">Nom</option></select>
+          <select id="sort-select"><option value="popular">Plus récents</option><option value="price-asc">Prix croissant</option><option value="price-desc">Prix décroissant</option><option value="name">Nom</option></select>
         </label>
       </div>
       <div class="catalog-layout">
@@ -85,7 +85,6 @@
             <label class="filter-option"><input type="radio" name="price" value="100-200"> 100 – 200</label>
             <label class="filter-option"><input type="radio" name="price" value="200+"> Plus de 200</label>
           </div>
-          <div class="filter-group"><h4>État</h4><label class="filter-option"><input type="checkbox" id="new-only"> Nouveau</label><label class="filter-option"><input type="checkbox" id="used-only"> Occasion</label></div>
           <button class="button button-primary filter-reset" id="reset-filters">Réinitialiser</button>
         </aside>
         <div class="product-grid" id="product-grid" aria-live="polite"></div>
