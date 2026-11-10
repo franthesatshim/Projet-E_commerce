@@ -89,8 +89,6 @@ function filteredProducts() {
     if (priceFilter === '200+') return price > 200;
     return true;
   });
-  if ($('#new-only').checked) list = [];
-  if ($('#used-only').checked) list = [];
   const sort = $('#sort-select').value;
   if (sort === 'price-asc') list.sort((a,b) => Number(selectedPrice(a)) - Number(selectedPrice(b)));
   if (sort === 'price-desc') list.sort((a,b) => Number(selectedPrice(b)) - Number(selectedPrice(a)));
@@ -354,14 +352,13 @@ $('#category-filters').addEventListener('change', () => {
   $$('.category-card').forEach(item => item.classList.remove('selected'));
   renderProducts();
 });
-$$('input[name="price"],#new-only,#used-only').forEach(input => input.addEventListener('change',renderProducts));
+$('input[name="price"]').forEach(input => input.addEventListener('change',renderProducts));
 $('#sort-select').addEventListener('change',renderProducts);
 $('#search-input').addEventListener('input',renderProducts);
 $('#search-form').addEventListener('submit',event => { event.preventDefault(); $('#catalogue').scrollIntoView(); });
 $('#reset-filters').onclick = () => {
   $('#search-input').value = '';
   $('input[name="price"][value="all"]').checked = true;
-  $('#new-only').checked = false; $('#used-only').checked = false;
   $$('.category-filter').forEach(input => input.checked = false);
   activeCategory = '';
   $$('.category-card').forEach(item => item.classList.remove('selected'));
