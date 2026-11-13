@@ -22,3 +22,8 @@ Configuration par variables d'environnement : `DB_HOST`, `DB_NAME`, `DB_USER`, `
 - Pas de paiement réel : les commandes sont enregistrées en attente.
 - Ajouter HTTPS, sauvegardes, e-mails transactionnels et tests de sécurité.
 - Le changement de statut d'une commande n'effectue pas de réapprovisionnement automatique en cas d'annulation.
+
+## Paiement simulé
+Le client choisit Orange Money, Airtel Money, Rawbank ou carte de démonstration. À la validation, la commande reçoit une référence DEMO et le statut `simule`. Aucun paiement réel n'est effectué, aucun PIN ou numéro de carte n'est collecté.
+
+Nouvelle installation : importer `schema.sql`. Base déjà créée avec l'ancien schéma : importer une seule fois `migration_payment_demo.sql`.
