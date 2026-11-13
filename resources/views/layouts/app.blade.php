@@ -13,6 +13,7 @@
     <a class="brand" href="{{ route('home') }}">Shop<span>Now</span></a>
     <nav>
         <a href="{{ route('products.index') }}">Boutique</a>
+        <a href="{{ route('showcase.index') }}">Collection photos</a>
         <a href="{{ route('cart.index') }}">Panier ({{ collect(session('cart',[]))->sum('quantity') }})</a>
         @auth
             <a href="{{ route('account') }}">Mon compte</a>
