@@ -30,3 +30,6 @@ Nouvelle installation : importer `schema.sql`. Base déjà créée avec l'ancien
 
 ## Catalogue de démonstration
 Pour ajouter 22 produits de mode et leurs catégories à une base déjà existante, importer `seed_catalogue.sql` dans phpMyAdmin. Le script évite de recréer les produits portant le même nom. Les prix et stocks sont des exemples, **pas des données d'inventaire vérifiées**. Les images restent vides tant que l'administrateur n'a pas associé de vraies photos. Ne pas utiliser les articles de démonstration pour de vraies ventes sans les vérifier.
+
+## Installer les catégories et produits de démonstration
+Après avoir importé `schema.sql`, ouvrir phpMyAdmin, sélectionner `deus_com_nos`, puis importer `seed_catalogue_demo.sql`. Sur une installation existante, importer seulement ce fichier. Le script évite de dupliquer les produits portant les mêmes noms. Prix, stocks et photos sont illustratifs : les photos externes peuvent ne pas correspondre exactement au nom de chaque article et nécessitent Internet.
