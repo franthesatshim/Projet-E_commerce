@@ -162,3 +162,14 @@ footer span,footer small{font-size:12px;color:#d4c6b9}
 .hero-photo-counter{position:absolute;z-index:3;top:23px;right:25px;background:#28221eaa;color:#fff;padding:8px 13px;font-size:11px;letter-spacing:2px;border-radius:3px}
 @media(max-width:700px){.hero-carousel-controls{bottom:18px}.hero-photo-counter{top:15px;right:15px}}
 @media(prefers-reduced-motion:reduce){.hero-carousel .hero-slide{transition:none!important;transform:none!important}.hero:hover .hero-carousel .hero-slide{transform:none}}
+
+/* Banner copy: staggered editorial entrance on every slide */
+@keyframes hero-text-in{from{opacity:0;transform:translateY(25px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes hero-accent-in{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+.hero-copy{animation:none}
+.hero-copy.hero-copy-animate .hero-kicker{animation:hero-accent-in .65s both cubic-bezier(.2,.8,.2,1)}
+.hero-copy.hero-copy-animate h1{animation:hero-text-in .85s .12s both cubic-bezier(.2,.8,.2,1)}
+.hero-copy.hero-copy-animate p{animation:hero-text-in .75s .3s both cubic-bezier(.2,.8,.2,1)}
+.hero-copy.hero-copy-animate .hero-actions{animation:hero-text-in .75s .47s both cubic-bezier(.2,.8,.2,1)}
+.hero-copy.hero-copy-animate .hero-note{animation:hero-text-in .75s .62s both cubic-bezier(.2,.8,.2,1)}
+@media(prefers-reduced-motion:reduce){.hero-copy.hero-copy-animate .hero-kicker,.hero-copy.hero-copy-animate h1,.hero-copy.hero-copy-animate p,.hero-copy.hero-copy-animate .hero-actions,.hero-copy.hero-copy-animate .hero-note{animation:none!important}}
