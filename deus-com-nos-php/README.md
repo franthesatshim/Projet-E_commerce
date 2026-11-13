@@ -12,3 +12,13 @@ Les photos WhatsApp déjà présentes dans `../Screenshots/` sont affichées dan
 Catalogue mode, recherche, catégories, fiches produits, panier en session, création de compte, connexion, commandes avec transaction et contrôle du stock, suivi des commandes, gestion admin des produits et statuts.
 Les paiements ne sont **pas** encaissés : la commande est enregistrée en attente. Intégrer un prestataire avant d'annoncer des paiements réels.
 Configuration par variables d'environnement : `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
+
+## Améliorations de gestion
+- Consultation détaillée des commandes depuis le compte client.
+- Formulaire d'édition prérempli depuis le panel admin.
+- Création de catégories et consultation de la liste des utilisateurs.
+
+## Avant mise en production
+- Pas de paiement réel : les commandes sont enregistrées en attente.
+- Ajouter HTTPS, sauvegardes, e-mails transactionnels et tests de sécurité.
+- Le changement de statut d'une commande n'effectue pas de réapprovisionnement automatique en cas d'annulation.
