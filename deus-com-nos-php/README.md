@@ -27,3 +27,6 @@ Configuration par variables d'environnement : `DB_HOST`, `DB_NAME`, `DB_USER`, `
 Le client choisit Orange Money, Airtel Money, Rawbank ou carte de démonstration. À la validation, la commande reçoit une référence DEMO et le statut `simule`. Aucun paiement réel n'est effectué, aucun PIN ou numéro de carte n'est collecté.
 
 Nouvelle installation : importer `schema.sql`. Base déjà créée avec l'ancien schéma : importer une seule fois `migration_payment_demo.sql`.
+
+## Catalogue de démonstration
+Pour ajouter 22 produits de mode et leurs catégories à une base déjà existante, importer `seed_catalogue.sql` dans phpMyAdmin. Le script évite de recréer les produits portant le même nom. Les prix et stocks sont des exemples, **pas des données d'inventaire vérifiées**. Les images restent vides tant que l'administrateur n'a pas associé de vraies photos. Ne pas utiliser les articles de démonstration pour de vraies ventes sans les vérifier.
