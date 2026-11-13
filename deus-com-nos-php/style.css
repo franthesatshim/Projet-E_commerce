@@ -54,3 +54,94 @@
 @media(max-width:1100px){.catalog-grid,.shop-home .catalog-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:850px){.shop{grid-template-columns:1fr}.catalog-sidebar{position:static}.catalog-grid,.shop-home .catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.catalog-intro{align-items:start;flex-direction:column;padding-top:18px}.catalog-intro h1{font-size:30px}.catalog-grid,.shop-home .catalog-grid{gap:10px}.catalog-card-body{padding:11px}.catalog-photo-label{font-size:9px;padding:5px 8px}.catalog-card-bottom{align-items:start;flex-direction:column;gap:5px}.catalog-card-bottom .price{font-size:17px}.catalog-name{font-size:13px;min-height:38px}.catalog-card button{font-size:11px;padding:11px 5px}.catalog-results-head strong{font-size:17px}}
+
+/* DEUS COM NOS — modern fashion editorial identity */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+:root{--blue:#b06e4b;--navy:#22201f;--muted:#827d78;--bg:#faf8f5;--accent:#b06e4b;--ink:#22201f}
+body{font-family:'DM Sans','Segoe UI',sans-serif;color:var(--ink);background:#fffefa}
+.announcement{background:#28211e;color:#f4e9dd;text-align:center;padding:9px 15px;font-size:10px;font-weight:700;letter-spacing:2.1px}
+.announcement span{padding:0 15px;color:#d9b497}
+header{background:#fffefaf2;border-bottom:1px solid #eee8e0;box-shadow:0 3px 20px #29211d08}
+.nav{max-width:1380px;padding:19px 26px;gap:30px}
+.logo{font-family:'Playfair Display',Georgia,serif;font-size:21px;color:#27201d;display:flex;align-items:center;gap:11px;white-space:nowrap}
+.brand-mark{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#2c2622;color:#f8e9d9;font-family:Georgia,serif;font-size:23px}
+.links a{font-size:13px;font-weight:700;transition:color .2s}
+.links a:hover,.nav-account:hover{color:var(--accent)}
+.search input{border:1px solid #ece5dc;background:#f9f6f1;border-radius:30px;padding:13px 17px}
+.search button{border-radius:50%;width:43px;height:43px;padding:0;font-size:25px;background:#28221e}
+.nav-account{font-weight:700;font-size:13px;white-space:nowrap}
+.nav-cart{font-size:13px;font-weight:700;white-space:nowrap}
+.nav-cart span{display:inline-grid;place-items:center;background:#302822;color:white;border-radius:50%;min-width:23px;height:23px;margin-left:5px;font-size:11px}
+.admin-nav-link{font-size:12px;font-weight:800;border:1px solid #c7aa95;border-radius:30px;padding:10px 15px;color:#7a4a2f;white-space:nowrap}
+.store-main{max-width:1380px;padding:30px 26px}
+.hero{background:#eee8e1;grid-template-columns:1.04fr .96fr;min-height:550px;padding:0;border-radius:5px}
+.hero:after{display:none}
+.hero-copy{padding:clamp(35px,5vw,80px);align-self:center}
+.hero-kicker{font-size:11px;letter-spacing:2.5px;font-weight:800;color:#a46e4d}
+.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(45px,5.8vw,88px);line-height:1.08;font-weight:500;letter-spacing:-2px;color:#2b2521;margin:20px 0 22px}
+.hero h1 em{color:#9e674a;font-weight:500}
+.hero p{color:#5d5550;font-size:16px;line-height:1.85;max-width:440px}
+.hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:23px;margin-top:30px}
+.hero-actions .btn{background:#29221f;border-radius:3px;padding:16px 23px;font-size:12px;letter-spacing:.5px}
+.hero-actions .btn span{margin-left:13px}
+.hero-secondary{font-size:13px;font-weight:800;border-bottom:1px solid #877566;padding-bottom:7px}
+.hero-note{font-size:12px;color:#7a6c60;margin-top:55px;letter-spacing:1px}
+.hero-note span{color:#aa7859;margin-right:8px}
+.hero-art{height:100%;min-height:550px;border-radius:0}
+.hero-art img{filter:saturate(.85);transition:transform 1.2s ease}
+.hero:hover .hero-art img{transform:scale(1.04)}
+.perks{grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 40px;border-bottom:1px solid #eee7de;gap:0}
+.perk{border:0;border-right:1px solid #eee7de;border-radius:0;box-shadow:none;padding:23px 15px;background:transparent;text-align:center;font-size:12px;font-weight:700}
+.perk:last-child{border-right:0}
+.perk span{font-family:'Playfair Display',Georgia,serif;color:#b88d70;margin-right:8px;font-size:17px}
+.section-title{margin:48px 0 21px}
+.section-title h2,.catalog-intro h1{font-family:'Playfair Display',Georgia,serif;font-weight:500;letter-spacing:-1px}
+.section-title h2{font-size:clamp(27px,3vw,38px)}
+.section-title>a,.catalog-results-head>a{font-size:12px;font-weight:800;color:#986b4c}
+.categories{gap:12px}
+.chip,.catalog-tab{background:#f5efe8;color:#4b3d33;border:1px solid #efe6dc;border-radius:3px;padding:13px 20px;font-size:12px;transition:background .25s,color .25s,transform .25s}
+.chip:hover,.catalog-tab:hover,.catalog-tab.is-active{background:#2c2520;color:white;border-color:#2c2520;transform:translateY(-2px)}
+.catalog-card{border:1px solid #f0ebe5;border-radius:3px;box-shadow:none}
+.catalog-card:hover{box-shadow:0 20px 45px #3c2e211a}
+.catalog-photo{background:#f1eae2}
+.catalog-photo-label{border-radius:2px;background:#fffefaed}
+.catalog-card-body{padding:18px}
+.catalog-category{color:#a07a60}
+.catalog-name{font-family:'DM Sans',sans-serif}
+.catalog-card-bottom .price{color:#28211e;font-weight:800}
+.catalog-card button{border-radius:3px;background:#29221e;letter-spacing:.3px}
+.catalog-card button:hover{background:#9c6547}
+.catalog-sidebar{background:#faf6f1;border:1px solid #eee4d9;border-radius:3px}
+.catalog-intro h1{font-size:clamp(34px,4vw,52px)}
+.catalog-eyebrow{color:#a36d4b}
+.catalog-count{background:#f4ece3;color:#7c5842}
+.catalog-results-head strong{font-family:'Playfair Display',Georgia,serif;font-size:25px;font-weight:500}
+.btn,button{transition:background .25s ease,transform .25s ease,box-shadow .25s ease}
+.btn{border-radius:3px}
+.field{border-color:#e8dfd5;background:#fffefa}
+.message{background:#f6efe7;color:#594838}
+footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;background:#28221f;color:#f3eae1;margin-top:70px;padding:43px max(26px,calc((100vw - 1328px)/2));text-align:left}
+footer strong{font-family:'Playfair Display',Georgia,serif;font-size:23px;font-weight:500}
+footer span,footer small{font-size:12px;color:#d4c6b9}
+.admin-header{background:#262321;color:#fff}
+.admin-nav .logo,.admin-nav .links a{color:#fff}
+.admin-nav .brand-mark{background:#c4a38d;color:#2a211c}
+.admin-nav .logo small{font:700 9px 'DM Sans',sans-serif;letter-spacing:1.6px;color:#d9b8a0}
+.admin-user{font-size:12px;color:#d9c7bb;margin-left:auto}
+.admin-main{max-width:1350px;background:#f8f6f3;min-height:75vh;padding:35px 28px}
+.admin-heading{padding:20px 0 25px}
+.admin-heading h1{font-family:'Playfair Display',Georgia,serif;font-size:42px;font-weight:500;margin:8px 0}
+.admin-heading p{color:#79716b}
+.admin-main .stat{background:white;border:1px solid #eae1d7;border-radius:8px;padding:25px}
+.admin-main .stat h1{font-size:38px;margin:8px 0;color:#9c6647}
+.admin-main .panel{border-color:#eae1d7;border-radius:8px}
+.admin-main h2{margin-top:38px}
+@keyframes fashion-rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fashion-reveal{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
+.hero-copy{animation:fashion-rise .85s both cubic-bezier(.2,.8,.2,1)}
+.hero-art img{animation:fashion-reveal 1.2s both ease-out}
+.catalog-card{animation:fashion-rise .65s both}
+.catalog-card:nth-child(2){animation-delay:.07s}.catalog-card:nth-child(3){animation-delay:.14s}.catalog-card:nth-child(4){animation-delay:.21s}
+@media(max-width:1000px){.nav{gap:15px}.hero{min-height:430px}.hero-art{min-height:430px}.hero-copy{padding:38px}.hero h1{font-size:clamp(42px,5vw,68px)}}
+@media(max-width:700px){.announcement{font-size:9px;letter-spacing:1px}.nav{padding:13px 16px}.logo{font-size:17px}.brand-mark{width:32px;height:32px;font-size:19px}.links{order:4;width:100%;justify-content:center;gap:24px}.search{order:5;flex-basis:100%}.hero{grid-template-columns:1fr}.hero-copy{padding:37px 26px}.hero h1{font-size:clamp(43px,10vw,62px)}.hero-art{min-height:320px;height:320px}.hero-note{margin-top:28px}.perks{grid-template-columns:repeat(2,1fr)}.perk:nth-child(2){border-right:0}.store-main{padding:18px 14px}.admin-user{display:none}.admin-nav .links{width:auto;order:initial;gap:12px}.admin-nav .links a{font-size:11px}footer{padding:35px 20px}.catalog-results-head strong{font-size:21px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
