@@ -19,7 +19,7 @@
             <a href="{{ route('account') }}">Mon compte</a>
             <a href="{{ route('account.favorites') }}">Mes favoris</a>
             @if(auth()->user()->role === 'admin')
-                <a href="{{ route('admin.dashboard') }}">Administration</a>
+                <a class="admin-nav-link" href="{{ route('admin.dashboard') }}">Administration</a>
             @endif
             <form method="post" action="{{ route('logout') }}">@csrf<button class="link">Déconnexion</button></form>
         @endauth
