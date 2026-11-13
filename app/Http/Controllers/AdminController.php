@@ -9,6 +9,8 @@ use App\Models\Review;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 
@@ -44,12 +46,24 @@ class AdminController extends Controller
             'price_cdf' => 'required|numeric|min:0|max:999999999999',
             'stock' => 'required|integer|min:0|max:1000000',
             'image' => 'nullable|image|max:2048',
+            'showcase_image' => ['nullable', 'string', Rule::in(collect(config('showcase', []))->pluck('path')->all())],
             'condition' => 'required|in:new,used',
         ]);
 
         $data['slug'] = Str::slug($data['name']).'-'.Str::lower(Str::random(5));
+        $selectedPhoto = $data['showcase_image'] ?? null;
+        unset($data['showcase_image']);
+
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('products', 'public');
+        } elseif ($selectedPhoto) {
+            $source = public_path($selectedPhoto);
+            if (! is_file($source)) {
+                throw ValidationException::withMessages(['showcase_image' => 'Cette photo est introuvable.']);
+            }
+            $destination = 'products/'.Str::uuid().'.jpg';
+            Storage::disk('public')->put($destination, file_get_contents($source));
+            $data['image'] = $destination;
         }
 
         Product::create($data + ['is_active' => true]);
