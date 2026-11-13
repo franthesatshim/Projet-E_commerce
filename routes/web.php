@@ -7,9 +7,11 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ShowcaseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/collection', [ShowcaseController::class, 'index'])->name('showcase.index');
 Route::get('/produits', [ProductController::class, 'index'])->name('products.index');
 Route::get('/produits/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/categorie/{category:slug}', [ProductController::class, 'category'])->name('categories.show');
