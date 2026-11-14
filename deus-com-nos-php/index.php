@@ -35,7 +35,9 @@ $categoryPhotos=[
  'accessoires'=>'https://unsplash.com/photos/D4jRahaUaIc/download?force=true&w=800',
  'perruques'=>'https://unsplash.com/photos/1axSISqHG9s/download?force=true&w=800',
  'wax'=>'https://images.unsplash.com/photo-1655682614757-a9a33fa45c93?w=800&h=1000&fit=crop&auto=format&q=85',
- 'vêtements'=>'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=700&h=850&fit=crop&auto=format&q=85'
+ 'vêtements'=>'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=700&h=850&fit=crop&auto=format&q=85',
+ 'sacs'=>'https://images.unsplash.com/photo-1547949003-9792a18a2601?w=700&h=850&fit=crop&auto=format&q=85',
+ 'chaussures'=>'https://images.unsplash.com/photo-1515347619252-60a4bf4fff4f?w=700&h=850&fit=crop&auto=format&q=85'
 ];
 foreach($categories as $c):
  $key=mb_strtolower(trim($c['name']),'UTF-8');
