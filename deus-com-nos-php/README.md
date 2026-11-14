@@ -1,5 +1,5 @@
 # DEUS COM NOS — boutique PHP / MySQL
-Nouvelle implémentation **isolée** de l'application Laravel historique. Ne remplace aucun fichier existant.
+Application principale du dépôt, développée en PHP et MySQL sans Laravel.
 ## Installation XAMPP
 1. Copier le dossier `deus-com-nos-php` dans `C:\xampp\htdocs\`.
 2. Démarrer Apache et MySQL dans XAMPP.
@@ -10,7 +10,7 @@ Nouvelle implémentation **isolée** de l'application Laravel historique. Ne rem
 Les photos WhatsApp déjà présentes dans `../Screenshots/` sont affichées dans une galerie de sélection dans le panel admin. Chaque photo peut être associée au produit correspondant au moment de sa création. Aucune image source n'est déplacée ni renommée. Les prix et les intitulés commerciaux doivent être saisis par l'administrateur. Les images supplémentaires peuvent aussi être placées dans `assets/products/` (chemin administrateur actuellement via sélection des captures).
 ## Fonctionnalités
 Catalogue mode, recherche, catégories, fiches produits, panier en session, création de compte, connexion, commandes avec transaction et contrôle du stock, suivi des commandes, gestion admin des produits et statuts.
-Les paiements ne sont **pas** encaissés : la commande est enregistrée en attente. Intégrer un prestataire avant d'annoncer des paiements réels.
+Le client choisit ses articles et renseigne son adresse. La commande est enregistrée en attente et le paiement s'effectue **à la livraison**. Aucun paiement en ligne n'est encaissé.
 Configuration par variables d'environnement : `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
 
 ## Améliorations de gestion
@@ -21,10 +21,10 @@ Configuration par variables d'environnement : `DB_HOST`, `DB_NAME`, `DB_USER`, `
 ## Avant mise en production
 - Pas de paiement réel : les commandes sont enregistrées en attente.
 - Ajouter HTTPS, sauvegardes, e-mails transactionnels et tests de sécurité.
-- Le changement de statut d'une commande n'effectue pas de réapprovisionnement automatique en cas d'annulation.
+- Lorsqu'une commande est annulée par l'administrateur, le stock est rétabli automatiquement une seule fois. Une commande annulée ou livrée ne peut pas être réactivée par simple changement de statut.
 
-## Paiement simulé
-Le client choisit Orange Money, Airtel Money, Rawbank ou carte de démonstration. À la validation, la commande reçoit une référence DEMO et le statut `simule`. Aucun paiement réel n'est effectué, aucun PIN ou numéro de carte n'est collecté.
+## Paiement à la livraison
+Le client confirme sa commande sans payer en ligne. La méthode enregistrée est `paiement_livraison` et le statut de paiement reste `en_attente`. L'administrateur gère le suivi de la commande. Le règlement s'effectue à la réception. Les anciennes commandes de démonstration restent consultables.
 
 Nouvelle installation : importer `schema.sql`. Base déjà créée avec l'ancien schéma : importer une seule fois `migration_payment_demo.sql`.
 
