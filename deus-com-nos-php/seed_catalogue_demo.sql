@@ -18,7 +18,7 @@ INSERT INTO products(category_id,name,description,price,stock,image,active)
 SELECT c.id,'Perruque bouclée noire','Article de démonstration DEUS COM NOS : visuel illustratif, à remplacer par la photo exacte du produit.',68,9,'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&auto=format&fit=crop&q=80',1
 FROM categories c WHERE c.name='Perruques' AND NOT EXISTS (SELECT 1 FROM products WHERE name='Perruque bouclée noire');
 INSERT INTO products(category_id,name,description,price,stock,image,active)
-SELECT c.id,'Perruque longue lisse','Article de démonstration DEUS COM NOS : visuel illustratif, à remplacer par la photo exacte du produit.',75,8,'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80',1
+SELECT c.id,'Perruque longue lisse','Article de démonstration DEUS COM NOS : visuel illustratif, à remplacer par la photo exacte du produit.',75,8,'https://unsplash.com/photos/0yTLdZwDJqk/download?force=true&w=800',1
 FROM categories c WHERE c.name='Perruques' AND NOT EXISTS (SELECT 1 FROM products WHERE name='Perruque longue lisse');
 INSERT INTO products(category_id,name,description,price,stock,image,active)
 SELECT c.id,'Tissu wax coloré','Article de démonstration DEUS COM NOS : visuel illustratif, à remplacer par la photo exacte du produit.',22,30,'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&auto=format&fit=crop&q=80',1
