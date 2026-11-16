@@ -545,8 +545,7 @@ footer span,footer small{color:#d0d5e7}
   box-shadow:none;
   overflow:visible;
 }
-.hero-carousel .hero-floating-object,
-.hero:hover .hero-carousel .hero-floating-object{
+.hero-carousel .hero-floating-object{
   position:relative;
   display:block;
   width:100%;
@@ -744,4 +743,10 @@ footer span,footer small{color:#d0d5e7}
   }
   .hero-carousel .hero-slide.is-active .hero-slide-float{animation:none!important}
   .hero-carousel.is-playing .hero-carousel-progress span{animation:none!important;transform:scaleX(0)!important}
+}
+
+/* Conserver le détourage et la netteté au survol, même sur les photos distantes. */
+.hero:hover .hero-carousel .hero-floating-object.hero-object-online{
+  filter:contrast(1.065) saturate(1.045);
+  mix-blend-mode:multiply;
 }
