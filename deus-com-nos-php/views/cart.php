@@ -42,7 +42,20 @@ $title = 'Mon panier — DEUS COM NOS';
                 <input type="hidden" name="action" value="checkout">
                 <label>Téléphone (pour la livraison)<input class="field" type="tel" name="phone" required minlength="8" maxlength="20" placeholder="+243 ..." autocomplete="tel"></label>
                 <label>Adresse de livraison<textarea class="field" name="address" required minlength="8" maxlength="1000" rows="3" placeholder="Quartier, avenue, numéro, commune..." autocomplete="street-address"></textarea></label>
-                <p class="message"><strong>Paiement à la livraison :</strong> vous paierez lors de la réception de votre commande. Aucun paiement en ligne ni code secret ne vous sera demandé.</p>
+                <fieldset class="payment-selector">
+                    <legend>Choisissez le paiement</legend>
+                    <label class="payment-option"><input type="radio" name="payment_method" value="paiement_livraison" checked>
+                        <span><strong>À la livraison</strong><small>Régler à la réception de vos articles.</small></span>
+                    </label>
+                    <?php require_once __DIR__ . '/../payments/netikash.php'; if (netikash_ready()): ?>
+                    <label class="payment-option"><input type="radio" name="payment_method" value="netikash">
+                        <span><strong>En ligne — Netikash</strong><small>Mobile Money et autres moyens proposés par Netikash sur sa page sécurisée. Montant : <?= money($cartTotal) ?> (USD).</small></span>
+                    </label>
+                    <?php else: ?>
+                    <p class="muted">Le paiement en ligne sera disponible après activation du compte marchand Netikash et de l'adresse HTTPS.</p>
+                    <?php endif; ?>
+                </fieldset>
+                <p class="muted">Ne communiquez jamais vos codes PIN ou mots de passe à la boutique.</p>
                 <button>Confirmer ma commande</button>
             </form>
         <?php else: ?>

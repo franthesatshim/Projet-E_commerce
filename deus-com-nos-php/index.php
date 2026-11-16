@@ -6,7 +6,10 @@ require __DIR__ . '/config.php';
 const APP_DIR = __DIR__;
 
 // Photos disponibles pour l'administration : dossier assets/products (principal) et ancien dossier ../Screenshots
-$assetImages = list_images(APP_DIR . '/assets/products', 'assets/products/');
+$assetImages = array_merge(
+    list_images(APP_DIR . '/assets/products', 'assets/products/'),
+    list_images(APP_DIR . '/assets/products/uploads', 'assets/products/uploads/')
+);
 $screenshots = list_images(APP_DIR . '/../Screenshots', '../Screenshots/');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

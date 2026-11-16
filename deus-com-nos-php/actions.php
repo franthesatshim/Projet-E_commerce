@@ -18,6 +18,7 @@ $returnPage = match (true) {
     $action === 'register'                        => 'register',
     $action === 'login'                           => 'login',
     in_array($action, ['checkout', 'update_cart', 'remove'], true) => 'cart',
+    in_array($action, ['netikash_start', 'netikash_sync'], true) => 'orders',
     str_starts_with($action, 'admin_')            => 'admin',
     default                                       => 'shop',
 };
@@ -35,11 +36,12 @@ function resolve_product_image(array $assetImages, array $screenshots): string {
         $types = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'];
         $info = @getimagesize($file['tmp_name']);
         if (!$info || !isset($types[$info[2]])) throw new Exception('Format de photo refusé : utilisez JPG, PNG ou WebP.');
-        $dir = __DIR__ . '/assets/products';
+        // Uploads persist in the Docker volume; bundled catalogue pictures are never overwritten.
+        $dir = __DIR__ . '/assets/products/uploads';
         if (!is_dir($dir) && !mkdir($dir, 0775, true)) throw new Exception("Impossible de créer le dossier assets/products.");
         $name = 'up-' . bin2hex(random_bytes(6)) . '.' . $types[$info[2]];   // nom généré : jamais celui du client
         if (!move_uploaded_file($file['tmp_name'], $dir . '/' . $name)) throw new Exception("Impossible d'enregistrer la photo.");
-        return 'assets/products/' . $name;
+        return 'assets/products/uploads/' . $name;
     }
 
     $image = trim((string)($_POST['remote_image'] ?? '')) ?: trim((string)($_POST['image'] ?? ''));
@@ -125,10 +127,18 @@ try {
                 flash('Connectez-vous (ou créez un compte) pour valider votre commande.');
                 redirect('index.php?page=login');
             }
+            $method = (string)($_POST['payment_method'] ?? 'paiement_livraison');
+            if (!in_array($method, ['paiement_livraison', 'netikash'], true)) {
+                throw new Exception('Mode de paiement inconnu.');
+            }
+            if ($method === 'netikash') {
+                require_once __DIR__ . '/payments/netikash.php';
+                if (!netikash_ready()) throw new Exception('Le paiement en ligne n’est pas encore activé. Choisissez le paiement à la livraison.');
+            }
             $address = trim((string)($_POST['address'] ?? ''));
             $phone   = trim((string)($_POST['phone'] ?? ''));
             if (mb_strlen($address) < 8 || mb_strlen($address) > 1000) throw new Exception('Adresse de livraison invalide (8 caractères minimum).');
-            if (!preg_match('/^[0-9+()\s.-]{8,20}$/', $phone)) throw new Exception('Numéro de téléphone invalide (pour vous joindre lors de la livraison).');
+            if (!preg_match('/^[0-9+()\s.-]{8,20}$/', $phone)) throw new Exception('Numéro de téléphone invalide.');
             $cart = $_SESSION['cart'] ?? [];
             if (!$cart) throw new Exception('Votre panier est vide.');
 
@@ -145,8 +155,9 @@ try {
                 $lines[] = [$p, (int)$qty];
                 $total += (float)$p['price'] * $qty;
             }
+            if ($total <= 0.0) throw new Exception('Total invalide. Contactez la boutique.');
             $db->prepare('INSERT INTO orders(user_id,total,address,phone,status,payment_method,payment_status,payment_reference) VALUES(?,?,?,?,?,?,?,?)')
-               ->execute([user()['id'], round($total, 2), $address, $phone, 'en_attente', 'paiement_livraison', 'en_attente', 'CMD-' . strtoupper(bin2hex(random_bytes(6)))]);
+               ->execute([user()['id'], round($total, 2), $address, $phone, 'en_attente', $method, 'en_attente', 'CMD-' . strtoupper(bin2hex(random_bytes(6)))]);
             $orderId = (int)$db->lastInsertId();
             $insItem = $db->prepare('INSERT INTO order_items(order_id,product_id,quantity,unit_price) VALUES(?,?,?,?)');
             $decStock = $db->prepare('UPDATE products SET stock=stock-? WHERE id=?');
@@ -156,7 +167,40 @@ try {
             }
             $db->commit();
             unset($_SESSION['cart']);
-            flash('Commande #' . $orderId . ' enregistrée. Vous paierez à la livraison, à la réception de vos articles.');
+            if ($method === 'netikash') {
+                // Never hold database locks while calling a remote payment API.
+                try {
+                    $paymentUrl = netikash_start_checkout($db, $orderId, (int)user()['id']);
+                    redirect($paymentUrl);
+                } catch (Throwable $e) {
+                    error_log('Netikash initialisation commande #' . $orderId . ': ' . $e->getMessage());
+                    flash('Commande #' . $orderId . ' enregistrée, paiement non confirmé. Consultez le détail pour suivre la situation.');
+                    redirect('index.php?page=order&id=' . $orderId);
+                }
+            }
+            flash('Commande #' . $orderId . ' enregistrée. Paiement à la livraison, à la réception de vos articles.');
+            redirect('index.php?page=order&id=' . $orderId);
+
+        // --------------- Démarrer ou vérifier un paiement Netikash (POST + CSRF + propriétaire)
+        case 'netikash_start':
+        case 'netikash_sync':
+            if (!user()) throw new Exception('Connexion obligatoire.');
+            $orderId = (int)($_POST['order_id'] ?? 0);
+            $orderQ = $db->prepare('SELECT * FROM orders WHERE id=? AND user_id=?');
+            $orderQ->execute([$orderId, (int)user()['id']]);
+            $order = $orderQ->fetch();
+            if (!$order || $order['payment_method'] !== 'netikash') throw new Exception('Commande ou moyen de paiement introuvable.');
+            require_once __DIR__ . '/payments/netikash.php';
+            if ($action === 'netikash_start') {
+                $url = netikash_start_checkout($db, $orderId, (int)user()['id']);
+                redirect($url);
+            }
+            $st = $db->prepare('SELECT id FROM payment_attempts WHERE order_id=? ORDER BY id DESC LIMIT 1');
+            $st->execute([$orderId]);
+            $attemptId = (int)$st->fetchColumn();
+            if ($attemptId < 1) throw new Exception('Aucune tentative de paiement.');
+            $paymentStatus = netikash_sync_attempt($db, $attemptId);
+            flash('État du paiement vérifié : ' . payment_label($paymentStatus));
             redirect('index.php?page=order&id=' . $orderId);
 
         // ------------------------------------------------------- Administration
@@ -217,6 +261,24 @@ try {
             $st->execute([$orderId]);
             $oldStatus = $st->fetchColumn();
             if ($oldStatus === false) throw new Exception('Commande introuvable.');
+            $pay = $db->prepare('SELECT payment_method,payment_status FROM orders WHERE id=? FOR UPDATE');
+            $pay->execute([$orderId]);
+            $payment = $pay->fetch();
+            if ($payment['payment_method'] === 'netikash') {
+                if (in_array($newStatus, ['confirmee','expediee','livree'], true) && $payment['payment_status'] !== 'paye') {
+                    throw new Exception('Paiement Netikash non encaissé : expédition impossible.');
+                }
+                if ($newStatus === 'annulee') {
+                    $pending = $db->prepare("SELECT COUNT(*) FROM payment_attempts WHERE order_id=? AND status IN ('initiating','unknown','requested','approved','locked')");
+                    $pending->execute([$orderId]);
+                    if ((int)$pending->fetchColumn() > 0) {
+                        throw new Exception('Paiement Netikash encore actif : attendez confirmation ou annulation côté prestataire.');
+                    }
+                    if ($payment['payment_status'] === 'paye') {
+                        throw new Exception('Commande payée : gérer le remboursement avant annulation.');
+                    }
+                }
+            }
             if ($oldStatus === 'annulee' && $newStatus !== 'annulee') throw new Exception('Une commande annulée ne peut pas être réactivée.');
             if ($oldStatus === 'livree' && $newStatus !== 'livree')   throw new Exception('Une commande livrée ne peut pas être modifiée.');
             if ($newStatus === 'annulee' && $oldStatus !== 'annulee') {   // on remet les articles en stock, une seule fois
@@ -240,6 +302,9 @@ try {
         flash("Une erreur technique est survenue. Réessayez ou contactez l'administrateur.");
     } else {
         flash($ex->getMessage());
+    }
+    if (in_array($action, ['netikash_start', 'netikash_sync'], true) && user()) {
+        redirect('index.php?page=order&id=' . max(1, (int)($_POST['order_id'] ?? 0)));
     }
     redirect('index.php?page=' . $returnPage);
 }

@@ -161,7 +161,7 @@ if ($orders) {
 <h2>Commandes</h2>
 <div class="panel table-wrap">
     <table>
-        <tr><th>Commande</th><th>Client et livraison</th><th>Articles</th><th>Total</th><th>Statut</th></tr>
+        <tr><th>Commande</th><th>Client et livraison</th><th>Articles</th><th>Total</th><th>Paiement</th><th>Statut</th></tr>
         <?php foreach ($orders as $o): ?>
             <tr>
                 <td>#<?= (int)$o['id'] ?><br><small class="muted"><?= e(date('d/m/Y H:i', strtotime($o['created_at']))) ?></small></td>
@@ -177,6 +177,10 @@ if ($orders) {
                     <?php endforeach ?>
                 </td>
                 <td><?= money($o['total']) ?></td>
+                <td>
+                    <strong><?= $o['payment_method'] === 'netikash' ? 'Netikash' : 'À la livraison' ?></strong><br>
+                    <small><?= e(payment_label($o['payment_status'])) ?></small>
+                </td>
                 <td>
                     <form method="post" class="status-form">
                         <?= csrf_field() ?>

@@ -4,7 +4,8 @@ declare(strict_types=1);
 // ---------------------------------------------------------------------------
 // Session et en-têtes de sécurité
 // ---------------------------------------------------------------------------
-$https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+$https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+      || str_starts_with((string)(getenv('APP_URL') ?: ''), 'https://');
 session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',
@@ -71,6 +72,18 @@ function redirect(string $to = 'index.php'): never { header('Location: ' . $to);
 function flash(string $msg): void { $_SESSION['flash'] = $msg; }
 
 function money($v): string { return number_format((float)$v, 2, ',', ' ') . ' $'; }
+
+const PAYMENT_STATUSES = [
+    'en_attente' => 'En attente de paiement',
+    'simule' => 'Ancien paiement de test',
+    'autorise' => 'Paiement confirmé (en cours de règlement)',
+    'paye' => 'Payé',
+    'echoue' => 'Paiement échoué',
+    'expire' => 'Demande expirée',
+    'annule' => 'Paiement annulé',
+    'bloque' => 'Paiement bloqué (vérification requise)',
+];
+function payment_label(?string $status): string { return PAYMENT_STATUSES[$status ?? ''] ?? (string)$status; }
 
 function status_label(?string $status): string { return ORDER_STATUSES[$status ?? ''] ?? (string)$status; }
 
