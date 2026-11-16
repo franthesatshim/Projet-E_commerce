@@ -9,7 +9,7 @@ $adminLayout = ($page === 'admin' && is_admin());
     <meta name="description" content="DEUS COM NOS : chaussures, sacs, tissus wax et perruques. Commandez en ligne et payez à la livraison.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23293653'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23e2ddf5' font-family='Georgia,serif'%3ED.%3C/text%3E%3C/svg%3E">
     <meta name="theme-color" content="#293653">
-    <link rel="stylesheet" href="style.css?v=20261117-blue-violet">
+    <link rel="stylesheet" href="style.css?v=20261117-floating-3d">
 </head>
 <body>
 <?php if ($adminLayout): ?>
@@ -86,9 +86,18 @@ document.querySelectorAll('[data-image-path]').forEach(function (button) {
     if (slides.length < 1) return;
     var index = 0, timer = null, interval = 5000;
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    function show(next) {
-        index = (next + slides.length) % slides.length;
-        slides.forEach(function (slide, i) { slide.classList.toggle('is-active', i === index); slide.setAttribute('aria-hidden', String(i !== index)); });
+
+    // Les images entrent depuis un côté et ressortent de l'autre, une à la fois.
+    function show(next, direction) {
+        var target = (next + slides.length) % slides.length;
+        carousel.dataset.direction = direction < 0 ? 'prev' : 'next';
+        slides.forEach(function (slide, i) {
+            var wasActive = slide.classList.contains('is-active');
+            slide.classList.toggle('is-leaving', wasActive && i !== target);
+            slide.classList.toggle('is-active', i === target);
+            slide.setAttribute('aria-hidden', String(i !== target));
+        });
+        index = target;
         dots.forEach(function (dot, i) {
             dot.classList.toggle('is-active', i === index);
             if (i === index) dot.setAttribute('aria-current', 'true'); else dot.removeAttribute('aria-current');
@@ -97,18 +106,47 @@ document.querySelectorAll('[data-image-path]').forEach(function (button) {
         var copy = document.querySelector('[data-hero-copy]');
         if (copy) { copy.classList.remove('hero-copy-animate'); void copy.offsetWidth; copy.classList.add('hero-copy-animate'); }
     }
+
     function stop() { if (timer !== null) { clearInterval(timer); timer = null; } }
-    function start() { stop(); if (slides.length > 1 && !document.hidden && !reducedMotion.matches) timer = setInterval(function () { show(index + 1); }, interval); }
-    var prev = carousel.querySelector('[data-carousel-prev]'), nextBtn = carousel.querySelector('[data-carousel-next]');
-    if (prev) prev.addEventListener('click', function () { show(index - 1); start(); });
-    if (nextBtn) nextBtn.addEventListener('click', function () { show(index + 1); start(); });
-    dots.forEach(function (dot, i) { dot.addEventListener('click', function () { show(i); start(); }); });
+    function start() {
+        stop();
+        if (slides.length > 1 && !document.hidden && !reducedMotion.matches) {
+            timer = setInterval(function () { show(index + 1, 1); }, interval);
+        }
+    }
+
+    var prev = carousel.querySelector('[data-carousel-prev]');
+    var nextBtn = carousel.querySelector('[data-carousel-next]');
+    if (prev) prev.addEventListener('click', function () { show(index - 1, -1); start(); });
+    if (nextBtn) nextBtn.addEventListener('click', function () { show(index + 1, 1); start(); });
+    dots.forEach(function (dot, i) {
+        dot.addEventListener('click', function () { show(i, i < index ? -1 : 1); start(); });
+    });
+
+    // Léger relief interactif sur ordinateur, sans perturber le mobile.
+    carousel.addEventListener('pointermove', function (event) {
+        if (event.pointerType === 'touch' || reducedMotion.matches) return;
+        var rect = carousel.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        var x = (event.clientX - rect.left) / rect.width - .5;
+        var y = (event.clientY - rect.top) / rect.height - .5;
+        carousel.style.setProperty('--tilt-y', (x * 10).toFixed(2) + 'deg');
+        carousel.style.setProperty('--tilt-x', (-y * 7).toFixed(2) + 'deg');
+    });
+    carousel.addEventListener('pointerleave', function () {
+        carousel.style.removeProperty('--tilt-x');
+        carousel.style.removeProperty('--tilt-y');
+    });
+
     carousel.addEventListener('mouseenter', stop);
     carousel.addEventListener('mouseleave', start);
     carousel.addEventListener('focusin', stop);
     carousel.addEventListener('focusout', function (event) { if (!carousel.contains(event.relatedTarget)) start(); });
     document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else start(); });
-    show(0);
+    if (typeof reducedMotion.addEventListener === 'function') {
+        reducedMotion.addEventListener('change', start);
+    }
+    show(0, 1);
     start();
 })();
 </script>
