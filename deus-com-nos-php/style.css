@@ -184,3 +184,92 @@ footer span,footer small{font-size:12px;color:#d4c6b9}
 .category-tile-name{position:absolute;bottom:18px;left:18px;right:18px;z-index:2;display:flex;align-items:center;justify-content:space-between;font-size:clamp(15px,1.6vw,22px);font-weight:650;letter-spacing:.01em}
 .category-photo-note{font-size:12px;color:#777;margin:0 0 26px}
 @media(max-width:800px){.category-showcase{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.category-tile{min-height:175px}}
+
+/* ==========================================================================
+   Mise à jour : photos réelles, fiche produit, panier, commandes, administration
+   ========================================================================== */
+/* Photos produits au format 4:5 (déjà recadrées dans assets/products) : rien n'est coupé */
+.catalog-photo{aspect-ratio:4/5}
+.catalog-photo img{transform:none}
+.catalog-card:hover .catalog-photo img{transform:scale(1.03)}
+.low-stock{color:#b4571f;font-weight:700}
+.out-stock{color:#a33}
+.in-stock{color:#2f7d4f}
+.category-tile img{background:#f1eae2}
+
+/* Fil d'Ariane et fiche produit */
+.crumbs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted);padding:22px 0 8px}
+.crumbs a:hover{color:var(--accent);text-decoration:underline}
+.crumbs strong{color:var(--ink);font-weight:600}
+.product-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start;padding:16px 0 40px}
+.product-gallery{background:#f1eae2;border-radius:8px;overflow:hidden}
+.product-gallery img{display:block;width:100%;height:auto}
+.product-gallery .placeholder{display:grid;place-items:center;min-height:360px}
+.product-gallery .placeholder[hidden]{display:none}
+.product-info h1{font-family:'Playfair Display',Georgia,serif;font-weight:500;font-size:clamp(26px,3.4vw,38px);margin:8px 0 10px;letter-spacing:-.5px}
+.product-price{font-size:28px;margin:0 0 8px;color:var(--accent)}
+.product-stock{font-weight:700;font-size:14px;margin:0 0 16px}
+.product-desc{line-height:1.7;color:#4a4540;margin:0 0 24px}
+.product-buy{display:flex;gap:14px;align-items:end;flex-wrap:wrap}
+.product-buy label{font-weight:700;font-size:13px}
+.product-buy .field{width:90px;margin-top:6px}
+.product-perks{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:8px;color:var(--muted);font-size:14px}
+.product-perks li:before{content:"✦";color:var(--accent);margin-right:10px}
+
+/* Panier et détail de commande */
+.cart-line{flex-wrap:wrap}
+.cart-thumb{flex:0 0 72px;width:72px;height:90px;border-radius:6px;overflow:hidden;background:#f1eae2;display:block}
+.cart-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.cart-info{flex:1 1 180px;min-width:0}
+.cart-info p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.cart-info .cart-line-total{color:var(--ink);font-weight:700}
+.layout .btn{margin:6px 8px 0 0}
+.layout textarea.field{resize:vertical}
+
+/* Statuts de commande */
+.badge{display:inline-block;padding:4px 10px;border-radius:30px;font-size:12px;font-weight:700;background:#eee7df;color:#5b4f44}
+.badge-en_attente{background:#fff1d6;color:#8a5a00}
+.badge-confirmee{background:#e1ecff;color:#1f4f9a}
+.badge-expediee{background:#ece3ff;color:#5430a0}
+.badge-livree{background:#dff3e6;color:#1f6b3d}
+.badge-annulee{background:#fbe0de;color:#a02a22}
+
+/* Pages diverses */
+.auth-panel{max-width:440px;margin:40px auto}
+.auth-panel label,.admin-form label{display:block;font-weight:700;font-size:13px;margin-bottom:14px}
+.auth-panel .field,.admin-form .field{margin-top:6px}
+.account-logout{margin-top:20px}
+.catalog-empty{text-align:center;padding:50px 20px}
+.footer-links{display:flex;gap:18px;flex-wrap:wrap}
+.footer-links a{opacity:.85}
+.footer-links a:hover{opacity:1;text-decoration:underline}
+
+/* Administration */
+.admin-form{display:grid;gap:4px}
+.admin-form .form-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.photo-fieldset{border:1px solid #eae1d7;border-radius:8px;padding:16px;margin:6px 0 16px}
+.photo-fieldset legend{font-weight:800;padding:0 8px}
+.admin-current-photo{display:block;width:120px;border-radius:6px;margin:4px 0 14px}
+.admin-thumb{width:48px;height:60px;object-fit:cover;border-radius:4px;display:block;background:#f1eae2}
+.status-form{display:flex;gap:6px;align-items:center}
+.status-form button{padding:8px 12px}
+.admin-chips{margin:15px 0}
+.admin-main td{vertical-align:top}
+.admin-main td small{line-height:1.5}
+.screenshot-choice[aria-pressed="true"]{border-color:var(--accent)}
+
+@media(max-width:850px){
+    .product-detail{grid-template-columns:1fr;gap:24px}
+    .admin-form .form-row{grid-template-columns:1fr}
+}
+
+/* Accueil : autant de colonnes que de catégories, et 4 produits par ligne */
+.category-showcase{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.home-grid,.shop-home .home-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1100px){.home-grid,.shop-home .home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.category-showcase{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.product-buy label{display:flex;flex-direction:column;gap:6px}
+.product-buy .field{margin-top:0}
+.admin-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.admin-form .field,.auth-panel .field,.product-buy .field{font-weight:400}
+.status-form select{padding:8px;border:1px solid #dcd2c7;border-radius:8px;background:#fff}
