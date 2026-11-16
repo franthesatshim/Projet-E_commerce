@@ -1,35 +1,74 @@
 # DEUS COM NOS — boutique PHP / MySQL
-Application principale du dépôt, développée en PHP et MySQL sans Laravel.
-## Installation XAMPP
-1. Copier le dossier `deus-com-nos-php` dans `C:\xampp\htdocs\`.
-2. Démarrer Apache et MySQL dans XAMPP.
-3. Importer `schema.sql` dans phpMyAdmin (http://localhost/phpmyadmin).
-4. Ouvrir http://localhost/Projet-E_commerce/deus-com-nos-php/index.php.
-5. Créer un compte sur la page d'inscription. Pour attribuer le rôle administrateur, exécuter dans phpMyAdmin : `UPDATE users SET role='admin' WHERE email='votre-email@example.com';` puis se déconnecter/reconnecter.
-## Photos
-Les photos WhatsApp déjà présentes dans `../Screenshots/` sont affichées dans une galerie de sélection dans le panel admin. Chaque photo peut être associée au produit correspondant au moment de sa création. Aucune image source n'est déplacée ni renommée. Les prix et les intitulés commerciaux doivent être saisis par l'administrateur. Les images supplémentaires peuvent aussi être placées dans `assets/products/` (chemin administrateur actuellement via sélection des captures).
+
+Boutique en ligne de chaussures, sacs, tissus wax et perruques, développée en PHP 8.2+ et MySQL, sans framework.
+Le client commande et **paie à la livraison** : aucun paiement en ligne n'est encaissé.
+
+## Installation (XAMPP)
+
+1. Copier le dépôt dans `C:\xampp\htdocs\Projet-E_commerce` (ou utiliser `git pull` dans ce dossier).
+2. Démarrer **Apache** et **MySQL** dans XAMPP. Si Apache utilise le port **3000**, adapter les URLs ci-dessous.
+3. Dans phpMyAdmin (http://localhost/phpmyadmin), importer **dans cet ordre** :
+   1. `deus-com-nos-php/schema.sql` (crée la base et les tables)
+   2. `deus-com-nos-php/catalogue.sql` (35 produits avec leurs photos)
+4. Ouvrir http://localhost/Projet-E_commerce/deus-com-nos-php/index.php
+5. Créer un compte sur la page d'inscription, puis le passer administrateur dans phpMyAdmin :
+   `UPDATE users SET role='admin' WHERE email='votre-email@example.com';`
+   Se déconnecter puis se reconnecter : le lien « Administration » apparaît.
+
+### Mise à jour d'une base déjà existante (IMPORTANT)
+
+1. Dans **phpMyAdmin → deus_com_nos → Exporter → Rapide → SQL**, sauvegarder la base de données **avant toute importation**.
+2. Importer `migration.sql` pour ajouter le téléphone et les champs de paiement manquants sans supprimer de données.
+3. Importer `catalogue.sql` pour **ajouter les 35 nouveaux produits**. Si un produit de même nom existe déjà, sa catégorie, sa description et sa photo sont mises à jour ; **son prix et son stock ne sont pas écrasés**. Les anciens articles aux noms de démonstration connus sont **masqués mais jamais supprimés**.
+4. Les **comptes, commandes, lignes de commande et catégories historiques sont conservés**. Aucun `DROP` de table réelle ni `DELETE` de produit/client/commande n'est lancé.
+5. Ne pas importer `schema.sql` en guise de migration : il sert aux installations neuves (ses `CREATE TABLE IF NOT EXISTS` ne mettent pas à niveau des colonnes existantes).
+6. En local avec Apache sur le port 3000 : `http://localhost:3000/Projet-E_commerce/deus-com-nos-php/index.php` ; selon la configuration du `DocumentRoot`, l'URL peut aussi être `http://localhost:3000/deus-com-nos-php/index.php`.
+
+
+Configuration par variables d'environnement : `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`
+(valeurs par défaut : `127.0.0.1`, `deus_com_nos`, `root`, mot de passe vide).
+
+## Organisation du code
+
+| Fichier | Rôle |
+|---|---|
+| `index.php` | Point d'entrée : routage, données communes, panier |
+| `actions.php` | Tous les formulaires (inscription, connexion, panier, commande, administration) |
+| `config.php` | Connexion BDD, session sécurisée, fonctions utilitaires |
+| `views/` | Une vue par page (`home`, `shop`, `product`, `cart`, `admin`…), `_layout.php` (en-tête/pied), `_card.php` (carte produit) |
+| `style.css` | Styles |
+| `assets/products/` | Photos des produits (voir ci-dessous) |
+| `schema.sql` / `migration.sql` / `catalogue.sql` | Base de données |
+
+## Photos des produits
+
+- Les photos du catalogue sont dans `assets/products/` : copies optimisées (format 4:5, moins de 200 Ko) des photos du dossier `Screenshots/`, qui reste **intact**.
+- Chaque photo correspond au nom et à la description du produit. Les prix en dirhams ajoutés par le fournisseur sur deux photos (mules, sandales compensées) ont été effacés ; les références (R7601-5, YQ6627…) sont conservées.
+- Dans l'administration, on peut **envoyer une nouvelle photo** (JPG, PNG, WebP, 5 Mo), choisir une photo déjà présente, ou coller l'URL d'une photo Unsplash/Pexels. Les photos envoyées sont enregistrées dans `assets/products/` sous un nom généré (`up-….jpg`) et ne sont pas suivies par Git.
+- Si l'envoi échoue, vérifier `upload_max_filesize` et `post_max_size` dans `php.ini`.
+
+## Prix et stocks de démonstration
+
+Les prix (USD) et les stocks de `catalogue.sql` sont **fictifs**. Les corriger dans
+Administration → Produits → Modifier avant toute vraie vente. Les descriptions décrivent ce que montrent les photos ;
+les pointures, matières et métrages sont à confirmer par la boutique.
+
 ## Fonctionnalités
-Catalogue mode, recherche, catégories, fiches produits, panier en session, création de compte, connexion, commandes avec transaction et contrôle du stock, suivi des commandes, gestion admin des produits et statuts.
-Le client choisit ses articles et renseigne son adresse. La commande est enregistrée en attente et le paiement s'effectue **à la livraison**. Aucun paiement en ligne n'est encaissé.
-Configuration par variables d'environnement : `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
 
-## Améliorations de gestion
-- Consultation détaillée des commandes depuis le compte client.
-- Formulaire d'édition prérempli depuis le panel admin.
-- Création de catégories et consultation de la liste des utilisateurs.
+- Collection avec recherche, catégories, tri par prix, fiches produit avec produits similaires.
+- Panier conservé en session (les articles masqués ou épuisés sont retirés automatiquement).
+- Compte client, commande avec **téléphone et adresse de livraison**, suivi du statut (en attente, confirmée, expédiée, livrée, annulée).
+- Commande transactionnelle avec contrôle du stock ; l'annulation par l'administrateur remet les articles en stock une seule fois.
+- Administration : tableau de bord, produits (création, modification préremplie, photo, masquer/afficher), catégories, commandes (client, téléphone, adresse, articles, statut), utilisateurs.
 
-## Avant mise en production
-- Pas de paiement réel : les commandes sont enregistrées en attente.
-- Ajouter HTTPS, sauvegardes, e-mails transactionnels et tests de sécurité.
-- Lorsqu'une commande est annulée par l'administrateur, le stock est rétabli automatiquement une seule fois. Une commande annulée ou livrée ne peut pas être réactivée par simple changement de statut.
+## Sécurité (déjà en place)
 
-## Paiement à la livraison
-Le client confirme sa commande sans payer en ligne. La méthode enregistrée est `paiement_livraison` et le statut de paiement reste `en_attente`. L'administrateur gère le suivi de la commande. Le règlement s'effectue à la réception. Les anciennes commandes de démonstration restent consultables.
+Mots de passe hachés, jeton CSRF sur tous les formulaires, requêtes préparées, sessions `HttpOnly` + `SameSite`,
+envois de photos vérifiés (type réel de l'image, nom généré, exécution de scripts interdite dans `assets/products/`).
 
-Nouvelle installation : importer `schema.sql`. Base déjà créée avec l'ancien schéma : importer une seule fois `migration_payment_demo.sql`.
+## Avant une mise en production
 
-## Catalogue de démonstration
-Pour ajouter 22 produits de mode et leurs catégories à une base déjà existante, importer `seed_catalogue.sql` dans phpMyAdmin. Le script évite de recréer les produits portant le même nom. Les prix et stocks sont des exemples, **pas des données d'inventaire vérifiées**. Les images restent vides tant que l'administrateur n'a pas associé de vraies photos. Ne pas utiliser les articles de démonstration pour de vraies ventes sans les vérifier.
-
-## Installer les catégories et produits de démonstration
-Après avoir importé `schema.sql`, ouvrir phpMyAdmin, sélectionner `deus_com_nos`, puis importer `seed_catalogue_demo.sql`. Sur une installation existante, importer seulement ce fichier. Le script évite de dupliquer les produits portant les mêmes noms. Prix, stocks et photos sont illustratifs : les photos externes peuvent ne pas correspondre exactement au nom de chaque article et nécessitent Internet.
+- Activer HTTPS, créer un utilisateur MySQL dédié (pas `root`), mettre en place des sauvegardes.
+- Aucun paiement en ligne : intégrer un prestataire (Mobile Money, carte) avant d'en annoncer un.
+- Ajouter des e-mails de confirmation de commande et une limitation des tentatives de connexion.
+- Vérifier les droits sur les photos de personnes (perruques) et de marques (Crabkids, Vlisco).
