@@ -387,3 +387,181 @@ button:hover,.btn:hover{box-shadow:0 8px 21px #35466d22}
 footer{background:#26334f;color:#f7f6ff}
 footer span,footer small{color:#d0d5e7}
 .footer-links a:hover{color:#ded7f4}
+
+
+/* ==========================================================================
+   DEUS COM NOS — Carrousel 3D flottant sur la page d'accueil
+   Les photos locales défilent une par une, comme des objets en lévitation.
+   Conserve la palette bleu ardoise / violet doux.
+   ========================================================================== */
+.hero-carousel{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  perspective:1200px;
+  background:radial-gradient(ellipse at 49% 40%,#f7f6ff 0%,#e9ebf7 52%,#dce4f3 100%);
+}
+.hero-carousel::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  width:min(73%,430px);
+  aspect-ratio:1;
+  left:13%;
+  top:7%;
+  border:1px solid #b3b3d35c;
+  border-radius:50%;
+  background:radial-gradient(circle at 65% 35%,#ffffffa3,transparent 65%);
+  box-shadow:0 0 0 36px #ffffff21,0 0 0 88px #ffffff16;
+  pointer-events:none;
+}
+.hero-carousel::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  bottom:49px;
+  left:23%;
+  right:23%;
+  height:23px;
+  border-radius:50%;
+  background:#4959784a;
+  filter:blur(20px);
+  pointer-events:none;
+}
+.hero-carousel .hero-slides{
+  position:absolute;
+  z-index:1;
+  inset:0;
+  perspective:1300px;
+  transform-style:preserve-3d;
+}
+.hero-carousel .hero-slide{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  z-index:1;
+  transform:translate3d(30%,2%,-230px) rotateY(-30deg) rotateZ(5deg) scale(.84);
+  transform-style:preserve-3d;
+  transition:opacity .85s ease,transform 1.1s cubic-bezier(.2,.7,.2,1),visibility 0s linear 1.1s;
+  will-change:transform,opacity;
+}
+.hero-carousel[data-direction="prev"] .hero-slide:not(.is-active):not(.is-leaving){
+  transform:translate3d(-30%,2%,-230px) rotateY(30deg) rotateZ(-5deg) scale(.84);
+}
+.hero-carousel .hero-slide.is-active{
+  z-index:3;
+  opacity:1;
+  visibility:visible;
+  transform:translate3d(0,0,50px) rotateY(-3deg) rotateZ(-1.5deg) scale(.98);
+  transition:opacity .85s ease,transform 1.1s cubic-bezier(.2,.7,.2,1),visibility 0s;
+}
+.hero-carousel .hero-slide.is-leaving{
+  z-index:2;
+  opacity:0;
+  visibility:hidden;
+  transform:translate3d(-30%,-3%,-210px) rotateY(32deg) rotateZ(-5deg) scale(.82);
+}
+.hero-carousel[data-direction="prev"] .hero-slide.is-leaving{
+  transform:translate3d(30%,-3%,-210px) rotateY(-32deg) rotateZ(5deg) scale(.82);
+}
+.hero-carousel .hero-slide-float{
+  display:grid;
+  place-items:center;
+  width:min(73%,350px);
+  height:min(74%,415px);
+  transform-style:preserve-3d;
+}
+.hero-carousel .hero-slide.is-active .hero-slide-float{
+  animation:deus-floating-3d 5.4s ease-in-out infinite;
+}
+@keyframes deus-floating-3d{
+  0%,100%{transform:translate3d(0,7px,0) rotateZ(-1.25deg)}
+  50%{transform:translate3d(0,-17px,20px) rotateZ(1.1deg)}
+}
+.hero-carousel .hero-slide-card{
+  position:relative;
+  display:block;
+  width:100%;
+  height:100%;
+  margin:0;
+  overflow:hidden;
+  border:7px solid #fffffff0;
+  border-radius:18px;
+  background:#f7f8fc;
+  box-shadow:0 13px 20px #293c6030,0 34px 65px #2637583d;
+  transform-style:preserve-3d;
+  transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
+  transition:transform .3s ease-out,box-shadow .3s ease-out;
+}
+.hero-carousel .hero-slide-card img,
+.hero:hover .hero-carousel .hero-slide-card img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;
+  border-radius:0;
+  filter:saturate(.94);
+  animation:none;
+  transition:none;
+  transform:none;
+}
+.hero-carousel .hero-slide-caption{
+  position:absolute;
+  bottom:13px;
+  left:13px;
+  right:13px;
+  width:fit-content;
+  max-width:calc(100% - 26px);
+  padding:9px 13px;
+  border:1px solid #ffffff6b;
+  border-radius:9px;
+  background:#263451ce;
+  color:#fff;
+  backdrop-filter:blur(12px);
+  font:600 12px/1.4 'DM Sans','Segoe UI',sans-serif;
+  letter-spacing:.15px;
+  box-shadow:0 5px 15px #2434511e;
+}
+.hero-carousel .hero-carousel-controls{z-index:7;background:#293956d4}
+.hero-carousel .hero-photo-counter{z-index:7;background:#293956ce}
+@media(hover:hover) and (pointer:fine){
+  .hero-carousel:hover .hero-slide.is-active .hero-slide-card{
+    box-shadow:0 20px 28px #293c603a,0 40px 78px #2637584d;
+  }
+  /* Sur l'accueil uniquement, les vignettes se soulèvent légèrement en relief */
+  .home-grid .catalog-card,.category-showcase .category-tile{
+    transform-style:preserve-3d;
+    transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s ease;
+  }
+  .home-grid .catalog-card:hover{
+    transform:perspective(900px) rotateX(2.5deg) rotateY(-2.5deg) translateY(-10px);
+    box-shadow:0 22px 42px #293b6330;
+  }
+  .category-showcase .category-tile:hover{
+    transform:perspective(900px) rotateX(3deg) rotateY(-3deg) translateY(-9px);
+    box-shadow:0 20px 35px #26375838;
+  }
+}
+@media(max-width:700px){
+  .hero-carousel .hero-slide-float{width:min(73%,290px);height:64%}
+  .hero-carousel .hero-slide-card{border-width:5px;border-radius:14px}
+  .hero-carousel .hero-slide-caption{font-size:10px;left:8px;right:8px;bottom:8px;padding:6px 9px}
+  .hero-carousel::after{bottom:47px}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-carousel .hero-slide,.hero-carousel .hero-slide.is-active,.hero-carousel .hero-slide.is-leaving{
+    transition:none!important;
+    transform:none!important;
+  }
+  .hero-carousel .hero-slide-float{animation:none!important}
+  .hero-carousel .hero-slide-card{transform:none!important;transition:none!important}
+  .home-grid .catalog-card:hover,.category-showcase .category-tile:hover{transform:none}
+}
