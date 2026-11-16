@@ -1,12 +1,13 @@
 <?php
 $title = 'DEUS COM NOS — Chaussures, sacs, wax et perruques';
 
-// Photos du carrousel : uniquement des photos réelles de la boutique (dossier assets/products)
+// Objets détourés sur fond transparent pour le carrousel 3D.
+// Sources : photos de produits de la boutique, sans carte ni arrière-plan photo.
 $slides = array_values(array_filter([
-    ['assets/products/wax-vlisco-s6945.jpg',            'Tissu wax Vlisco aux motifs colorés'],
-    ['assets/products/sac-portefeuille-assorti.jpg',    'Sacs à main avec portefeuilles assortis'],
-    ['assets/products/mules-talon-bloc-r7601.jpg',      'Mules à talon bloc en plusieurs coloris'],
-    ['assets/products/perruque-bob-ombre-caramel.jpg',  'Perruque bob lisse ombré caramel'],
+    ['assets/hero/sac-bordeaux.png',         'Sac à main bordeaux flottant'],
+    ['assets/hero/chaussures-ballerines.png','Ballerines noires flottantes'],
+    ['assets/hero/sac-dore.png',             'Sac à main doré flottant'],
+    ['assets/hero/chaussures-noires.png',    'Chaussures noires flottantes'],
 ], fn($s) => is_file(APP_DIR . '/' . $s[0])));
 
 $latest = $db->query(
@@ -23,15 +24,12 @@ $latest = $db->query(
         <div class="hero-note"><span>✦</span> La mode à votre image</div>
     </div>
     <?php if ($slides): ?>
-    <div class="hero-art hero-carousel" data-carousel data-direction="next" role="region" aria-roledescription="carrousel" aria-label="Photos de la collection DEUS COM NOS">
+    <div class="hero-art hero-carousel" data-carousel data-direction="next" role="region" aria-roledescription="carrousel" aria-label="Objets de mode flottants DEUS COM NOS">
         <div class="hero-slides">
             <?php foreach ($slides as $i => $s): ?>
                 <div class="hero-slide<?= $i === 0 ? ' is-active' : '' ?>" role="group" aria-roledescription="diapositive" aria-label="<?= ($i + 1) . ' sur ' . count($slides) ?>" aria-hidden="<?= $i === 0 ? 'false' : 'true' ?>">
                     <div class="hero-slide-float">
-                        <figure class="hero-slide-card">
-                            <img src="<?= e(img_url($s[0])) ?>" alt="<?= e($s[1]) ?>"<?= $i === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
-                            <figcaption class="hero-slide-caption"><?= e($s[1]) ?></figcaption>
-                        </figure>
+                        <img class="hero-floating-object" src="<?= e(img_url($s[0])) ?>" alt="<?= e($s[1]) ?>"<?= $i === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
                     </div>
                 </div>
             <?php endforeach ?>
