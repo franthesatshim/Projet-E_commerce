@@ -1,14 +1,35 @@
 <?php
 $title = 'DEUS COM NOS — Chaussures, sacs, wax et perruques';
 
-// Objets détourés sur fond transparent pour le carrousel 3D.
-// Sources : photos de produits de la boutique, sans carte ni arrière-plan photo.
-$slides = array_values(array_filter([
-    ['assets/hero/sac-bordeaux.png',         'Sac à main bordeaux flottant'],
-    ['assets/hero/chaussures-ballerines.png','Ballerines noires flottantes'],
-    ['assets/hero/sac-dore.png',             'Sac à main doré flottant'],
-    ['assets/hero/chaussures-noires.png',    'Chaussures noires flottantes'],
-], fn($s) => is_file(APP_DIR . '/' . $s[0])));
+// Images d'ambiance haute résolution (Unsplash / Pexels), isolées VISUELLEMENT
+// grâce au mode de fusion CSS. Les PNG locaux servent de secours hors ligne.
+// Ce ne sont pas des fiches de produits ni des photos garanties du stock.
+$slides = [
+    [
+        'image' => 'https://images.unsplash.com/photo-1691480250099-a63081ecfcb8?auto=format&fit=crop&w=1600&q=86',
+        'fallback' => 'assets/hero/sac-bordeaux.png',
+        'alt' => 'Sac à main brun élégant suspendu dans le carrousel',
+        'style' => 'bag',
+    ],
+    [
+        'image' => 'https://images.pexels.com/photos/28821783/pexels-photo-28821783.jpeg?auto=compress&cs=tinysrgb&w=1600',
+        'fallback' => 'assets/hero/chaussures-ballerines.png',
+        'alt' => 'Escarpins féminins élégants semblant flotter',
+        'style' => 'heels',
+    ],
+    [
+        'image' => 'https://images.pexels.com/photos/17152271/pexels-photo-17152271.jpeg?auto=compress&cs=tinysrgb&w=1600',
+        'fallback' => 'assets/hero/sac-dore.png',
+        'alt' => 'Petit sac à main noir flottant',
+        'style' => 'small-bag',
+    ],
+    [
+        'image' => 'https://images.pexels.com/photos/26856057/pexels-photo-26856057.jpeg?auto=compress&cs=tinysrgb&w=1600',
+        'fallback' => 'assets/hero/chaussures-noires.png',
+        'alt' => 'Sandales à talons féminines en lévitation',
+        'style' => 'sandals',
+    ],
+];
 
 $latest = $db->query(
     'SELECT p.*, c.name AS category FROM products p LEFT JOIN categories c ON c.id=p.category_id
@@ -25,11 +46,17 @@ $latest = $db->query(
     </div>
     <?php if ($slides): ?>
     <div class="hero-art hero-carousel" data-carousel data-direction="next" role="region" aria-roledescription="carrousel" aria-label="Objets de mode flottants DEUS COM NOS">
-        <div class="hero-slides">
+        <div class="hero-slides" aria-live="off">
             <?php foreach ($slides as $i => $s): ?>
                 <div class="hero-slide<?= $i === 0 ? ' is-active' : '' ?>" role="group" aria-roledescription="diapositive" aria-label="<?= ($i + 1) . ' sur ' . count($slides) ?>" aria-hidden="<?= $i === 0 ? 'false' : 'true' ?>">
-                    <div class="hero-slide-float">
-                        <img class="hero-floating-object" src="<?= e(img_url($s[0])) ?>" alt="<?= e($s[1]) ?>"<?= $i === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+                    <div class="hero-slide-float hero-item-<?= e($s['style']) ?>">
+                        <img class="hero-floating-object hero-object-online"
+                             src="<?= e($s['image']) ?>"
+                             data-fallback="<?= e(img_url($s['fallback'])) ?>"
+                             alt="<?= e($s['alt']) ?>"
+                             decoding="async" loading="<?= $i === 0 ? 'eager' : 'lazy' ?>"
+                             <?= $i === 0 ? 'fetchpriority="high"' : '' ?>
+                             onerror="this.onerror=null;this.src=this.dataset.fallback;this.classList.remove('hero-object-online');this.classList.add('hero-object-local')">
                     </div>
                 </div>
             <?php endforeach ?>
@@ -44,6 +71,8 @@ $latest = $db->query(
             <button type="button" class="hero-arrow" data-carousel-next aria-label="Photo suivante">›</button>
         </div>
         <div class="hero-photo-counter"><span data-carousel-count>01</span> / <?= sprintf('%02d', count($slides)) ?></div>
+        <div class="hero-carousel-progress" aria-hidden="true"><span data-carousel-progress></span></div>
+        <span class="hero-carousel-disclaimer">Visuels de présentation</span>
     </div>
     <?php endif ?>
 </section>
