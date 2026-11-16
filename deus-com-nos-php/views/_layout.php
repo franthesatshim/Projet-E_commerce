@@ -9,7 +9,7 @@ $adminLayout = ($page === 'admin' && is_admin());
     <meta name="description" content="DEUS COM NOS : chaussures, sacs, tissus wax et perruques. Commandez en ligne et payez à la livraison.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23293653'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23e2ddf5' font-family='Georgia,serif'%3ED.%3C/text%3E%3C/svg%3E">
     <meta name="theme-color" content="#293653">
-    <link rel="stylesheet" href="style.css?v=20261117-floating-3d">
+    <link rel="stylesheet" href="style.css?v=20261117-transparent-objects">
 </head>
 <body>
 <?php if ($adminLayout): ?>
