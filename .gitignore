@@ -7,3 +7,9 @@
 *.log
 .DS_Store
 Thumbs.db
+
+# Photos envoyées par les administrateurs, persistées dans le volume Docker
+/deus-com-nos-php/assets/products/uploads/
+# Sauvegardes de bases et conteneurs
+*.sql.gz
+*.dump
