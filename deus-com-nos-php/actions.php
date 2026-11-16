@@ -134,6 +134,13 @@ try {
             if ($method === 'netikash') {
                 require_once __DIR__ . '/payments/netikash.php';
                 if (!netikash_ready()) throw new Exception('Le paiement en ligne n’est pas encore activé. Choisissez le paiement à la livraison.');
+                try {
+                    // Vérifier que la migration est appliquée AVANT de réserver du stock.
+                    $db->query('SELECT id FROM payment_attempts LIMIT 1');
+                } catch (PDOException $e) {
+                    error_log('Netikash : table payment_attempts absente : ' . $e->getMessage());
+                    throw new Exception('Paiement indisponible : la migration Netikash doit être appliquée.');
+                }
             }
             $address = trim((string)($_POST['address'] ?? ''));
             $phone   = trim((string)($_POST['phone'] ?? ''));
