@@ -1,7 +1,7 @@
 # DEUS COM NOS — boutique PHP / MySQL
 
 Boutique en ligne de chaussures, sacs, tissus wax et perruques, développée en PHP 8.2+ et MySQL, sans framework.
-Le client commande et **paie à la livraison** : aucun paiement en ligne n'est encaissé.
+Le client peut choisir **le paiement à la livraison** ou **Netikash (paiement en ligne réel)** après activation de l’intégration et configuration du webhook sécurisé.
 
 ## Installation (XAMPP)
 
@@ -69,6 +69,19 @@ envois de photos vérifiés (type réel de l'image, nom généré, exécution de
 ## Avant une mise en production
 
 - Activer HTTPS, créer un utilisateur MySQL dédié (pas `root`), mettre en place des sauvegardes.
-- Aucun paiement en ligne : intégrer un prestataire (Mobile Money, carte) avant d'en annoncer un.
+- L'intégration Netikash est disponible, mais reste **désactivée sans les clés marchandes, le webhook et une URL HTTPS publique**. Faire des essais avant une mise en production.
 - Ajouter des e-mails de confirmation de commande et une limitation des tentatives de connexion.
 - Vérifier les droits sur les photos de personnes (perruques) et de marques (Crabkids, Vlisco).
+
+## Paiement réel Netikash et déploiement Docker
+
+**Guide d’installation pas à pas :** [docs/DEPLOIEMENT_DOCKER_NETIKASH.md](../docs/DEPLOIEMENT_DOCKER_NETIKASH.md).
+
+- Deux parcours : **paiement à la livraison** (toujours actif) et **paiement hébergé Netikash** (activable via variables d'environnement).
+- Le site conserve les prix en **USD**. Le client choisit les moyens réellement disponibles dans l'interface Netikash : aucun opérateur n'est simulé.
+- Contrôle du montant côté serveur, requête OAuth2, validation HTTPS, références uniques et enregistrement des tentatives.
+- Un webhook n'est accepté qu'avec une signature HMAC vérifiée, un timestamp récent et une **vérification serveur** de la transaction.
+- Seul le statut Netikash `completed` permet de marquer une commande `paye`. `approved` est `autorise`, sans autoriser l'expédition.
+- Pour une **ancienne base** : sauvegarde, puis `migration.sql` et `migration_netikash.sql`. Pour une **nouvelle installation Docker**, les scripts `schema.sql` et `catalogue.sql` sont chargés automatiquement au premier démarrage.
+- Pour Docker, copier `.env.example` vers `.env`, modifier les mots de passe, puis `docker compose up -d --build`.
+- **Les identifiants Netikash ne doivent jamais être publiés dans GitHub.** Le paiement réel reste désactivé avec `NETIKASH_ENABLED=0`, valeur par défaut.
