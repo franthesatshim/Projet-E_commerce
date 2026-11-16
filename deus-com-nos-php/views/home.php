@@ -23,10 +23,17 @@ $latest = $db->query(
         <div class="hero-note"><span>✦</span> La mode à votre image</div>
     </div>
     <?php if ($slides): ?>
-    <div class="hero-art hero-carousel" data-carousel aria-label="Photos de la collection DEUS COM NOS">
+    <div class="hero-art hero-carousel" data-carousel data-direction="next" role="region" aria-roledescription="carrousel" aria-label="Photos de la collection DEUS COM NOS">
         <div class="hero-slides">
             <?php foreach ($slides as $i => $s): ?>
-                <img class="hero-slide<?= $i === 0 ? ' is-active' : '' ?>" src="<?= e(img_url($s[0])) ?>" alt="<?= e($s[1]) ?>"<?= $i === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+                <div class="hero-slide<?= $i === 0 ? ' is-active' : '' ?>" role="group" aria-roledescription="diapositive" aria-label="<?= ($i + 1) . ' sur ' . count($slides) ?>" aria-hidden="<?= $i === 0 ? 'false' : 'true' ?>">
+                    <div class="hero-slide-float">
+                        <figure class="hero-slide-card">
+                            <img src="<?= e(img_url($s[0])) ?>" alt="<?= e($s[1]) ?>"<?= $i === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+                            <figcaption class="hero-slide-caption"><?= e($s[1]) ?></figcaption>
+                        </figure>
+                    </div>
+                </div>
             <?php endforeach ?>
         </div>
         <div class="hero-carousel-controls">
