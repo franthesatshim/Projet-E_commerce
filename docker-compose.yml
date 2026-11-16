@@ -1,0 +1,52 @@
+name: deus-com-nos
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: deus_com_nos
+      MYSQL_USER: deusapp
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Define MYSQL_PASSWORD dans .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD dans .env}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Chargés uniquement au premier démarrage sur un volume MySQL vide.
+      - ./deus-com-nos-php/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./deus-com-nos-php/catalogue.sql:/docker-entrypoint-initdb.d/02-catalogue.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysqladmin ping -h 127.0.0.1 -u\"$$MYSQL_USER\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [backend]
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:80"
+    environment:
+      DB_HOST: db
+      DB_NAME: deus_com_nos
+      DB_USER: deusapp
+      DB_PASS: ${MYSQL_PASSWORD:?Define MYSQL_PASSWORD dans .env}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      NETIKASH_ENABLED: ${NETIKASH_ENABLED:-0}
+      NETIKASH_CLIENT_ID: ${NETIKASH_CLIENT_ID:-}
+      NETIKASH_CLIENT_SECRET: ${NETIKASH_CLIENT_SECRET:-}
+      NETIKASH_WEBHOOK_SECRET: ${NETIKASH_WEBHOOK_SECRET:-}
+      NETIKASH_WEBHOOK_SIGNATURE_MODE: ${NETIKASH_WEBHOOK_SIGNATURE_MODE:-raw_base64}
+    volumes:
+      - product_uploads:/var/www/html/assets/products/uploads
+    networks: [backend]
+
+networks:
+  backend:
+    driver: bridge
+volumes:
+  mysql_data:
+  product_uploads:
