@@ -484,58 +484,9 @@ footer span,footer small{color:#d0d5e7}
   0%,100%{transform:translate3d(0,7px,0) rotateZ(-1.25deg)}
   50%{transform:translate3d(0,-17px,20px) rotateZ(1.1deg)}
 }
-.hero-carousel .hero-slide-card{
-  position:relative;
-  display:block;
-  width:100%;
-  height:100%;
-  margin:0;
-  overflow:hidden;
-  border:7px solid #fffffff0;
-  border-radius:18px;
-  background:#f7f8fc;
-  box-shadow:0 13px 20px #293c6030,0 34px 65px #2637583d;
-  transform-style:preserve-3d;
-  transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
-  transition:transform .3s ease-out,box-shadow .3s ease-out;
-}
-.hero-carousel .hero-slide-card img,
-.hero:hover .hero-carousel .hero-slide-card img{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:contain;
-  border-radius:0;
-  filter:saturate(.94);
-  animation:none;
-  transition:none;
-  transform:none;
-}
-.hero-carousel .hero-slide-caption{
-  position:absolute;
-  bottom:13px;
-  left:13px;
-  right:13px;
-  width:fit-content;
-  max-width:calc(100% - 26px);
-  padding:9px 13px;
-  border:1px solid #ffffff6b;
-  border-radius:9px;
-  background:#263451ce;
-  color:#fff;
-  backdrop-filter:blur(12px);
-  font:600 12px/1.4 'DM Sans','Segoe UI',sans-serif;
-  letter-spacing:.15px;
-  box-shadow:0 5px 15px #2434511e;
-}
 .hero-carousel .hero-carousel-controls{z-index:7;background:#293956d4}
 .hero-carousel .hero-photo-counter{z-index:7;background:#293956ce}
 @media(hover:hover) and (pointer:fine){
-  .hero-carousel:hover .hero-slide.is-active .hero-slide-card{
-    box-shadow:0 20px 28px #293c603a,0 40px 78px #2637584d;
-  }
   /* Sur l'accueil uniquement, les vignettes se soulèvent légèrement en relief */
   .home-grid .catalog-card,.category-showcase .category-tile{
     transform-style:preserve-3d;
@@ -552,8 +503,6 @@ footer span,footer small{color:#d0d5e7}
 }
 @media(max-width:700px){
   .hero-carousel .hero-slide-float{width:min(73%,290px);height:64%}
-  .hero-carousel .hero-slide-card{border-width:5px;border-radius:14px}
-  .hero-carousel .hero-slide-caption{font-size:10px;left:8px;right:8px;bottom:8px;padding:6px 9px}
   .hero-carousel::after{bottom:47px}
 }
 @media(prefers-reduced-motion:reduce){
@@ -562,6 +511,79 @@ footer span,footer small{color:#d0d5e7}
     transform:none!important;
   }
   .hero-carousel .hero-slide-float{animation:none!important}
-  .hero-carousel .hero-slide-card{transform:none!important;transition:none!important}
   .home-grid .catalog-card:hover,.category-showcase .category-tile:hover{transform:none}
+}
+
+
+/* ==========================================================================
+   Carrousel d'OBJETS flottants (PNG détourés) — aucune carte ni fond photo.
+   Les produits sont seuls en lévitation dans une ambiance bleu/violet doux.
+   ========================================================================== */
+.hero-carousel{
+  background:
+    radial-gradient(ellipse at 50% 55%,rgba(255,255,255,.95) 0%,rgba(235,234,250,.84) 49%,#dfe6f6 100%);
+}
+.hero-carousel::before{
+  opacity:.64;
+  box-shadow:0 0 0 45px #ffffff14,0 0 0 100px #c1c4e817;
+}
+.hero-carousel::after{
+  bottom:54px;
+  left:27%;
+  right:27%;
+  height:21px;
+  background:rgba(43,52,89,.38);
+  filter:blur(22px);
+  transition:opacity .7s ease;
+}
+.hero-carousel .hero-slide-float{
+  width:min(92%,510px);
+  height:min(86%,510px);
+  padding:0;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  overflow:visible;
+}
+.hero-carousel .hero-floating-object,
+.hero:hover .hero-carousel .hero-floating-object{
+  position:relative;
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  margin:auto;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent!important;
+  object-fit:contain;
+  object-position:center;
+  opacity:1;
+  visibility:visible;
+  filter:drop-shadow(0 22px 18px rgba(37,45,83,.25));
+  animation:none;
+  transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)) translateZ(0);
+  transition:transform .38s ease-out,filter .4s ease-out;
+  will-change:transform;
+  pointer-events:none;
+}
+@media(hover:hover) and (pointer:fine){
+  .hero-carousel:hover .hero-slide.is-active .hero-floating-object{
+    filter:drop-shadow(0 26px 22px rgba(37,45,83,.32));
+  }
+}
+@media(max-width:700px){
+  .hero-carousel .hero-slide-float{
+    width:min(94%,370px);
+    height:78%;
+  }
+  .hero-carousel::after{bottom:43px}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-carousel .hero-floating-object{
+    transform:none!important;
+    transition:none!important;
+  }
 }
