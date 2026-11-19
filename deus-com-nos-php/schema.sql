@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS payment_attempts (
   payment_url VARCHAR(1000) DEFAULT NULL,
   amount DECIMAL(12,2) NOT NULL,
   currency CHAR(3) NOT NULL DEFAULT 'USD',
+  is_sandbox TINYINT(1) NOT NULL DEFAULT 0,
   status VARCHAR(24) NOT NULL DEFAULT 'initiating',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -21,4 +22,27 @@ CREATE TABLE IF NOT EXISTS payment_attempts (
   CONSTRAINT fk_payment_attempt_order FOREIGN KEY(order_id) REFERENCES orders(id)
 ) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS order_items (id INT AUTO_INCREMENT PRIMARY KEY,order_id INT NOT NULL,product_id INT NOT NULL,quantity INT NOT NULL,unit_price DECIMAL(12,2) NOT NULL,FOREIGN KEY(order_id) REFERENCES orders(id),FOREIGN KEY(product_id) REFERENCES products(id));
+CREATE TABLE IF NOT EXISTS invoices (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL UNIQUE,
+  customer_name VARCHAR(120) NOT NULL,
+  customer_email VARCHAR(190) NOT NULL,
+  delivery_address TEXT NOT NULL,
+  total DECIMAL(12,2) NOT NULL,
+  paid_amount DECIMAL(12,2) NOT NULL,
+  paid_currency CHAR(3) NOT NULL,
+  payment_method VARCHAR(30) DEFAULT NULL,
+  payment_reference VARCHAR(64) DEFAULT NULL,
+  issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_invoice_order FOREIGN KEY(order_id) REFERENCES orders(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS invoice_items (
+  invoice_id BIGINT UNSIGNED NOT NULL,
+  line_number INT NOT NULL,
+  product_name VARCHAR(160) NOT NULL,
+  quantity INT NOT NULL,
+  unit_price DECIMAL(12,2) NOT NULL,
+  PRIMARY KEY(invoice_id, line_number),
+  CONSTRAINT fk_invoice_item_invoice FOREIGN KEY(invoice_id) REFERENCES invoices(id)
+) ENGINE=InnoDB;
 INSERT IGNORE INTO categories(name) VALUES ('Vêtements'),('Perruques'),('Wax'),('Accessoires');

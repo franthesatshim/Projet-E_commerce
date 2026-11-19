@@ -37,22 +37,31 @@ $title = 'Mon panier — DEUS COM NOS';
         <h2>Résumé de commande</h2>
         <h2>Total : <?= money($cartTotal) ?></h2>
         <?php if (user()): ?>
+            <?php
+            require_once __DIR__ . '/../payments/shwary.php';
+            $shwaryAmount = shwary_quote((string)round($cartTotal, 2));
+            ?>
             <form method="post">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="checkout">
-                <label>Téléphone (pour la livraison)<input class="field" type="tel" name="phone" required minlength="8" maxlength="20" placeholder="+243 ..." autocomplete="tel"></label>
+                <label>Téléphone (livraison<?= $shwaryAmount !== null ? ' et Mobile Money si choisi' : '' ?>)<input class="field" type="tel" name="phone" required minlength="8" maxlength="20" placeholder="+243 ..." autocomplete="tel"></label>
                 <label>Adresse de livraison<textarea class="field" name="address" required minlength="8" maxlength="1000" rows="3" placeholder="Quartier, avenue, numéro, commune..." autocomplete="street-address"></textarea></label>
                 <fieldset class="payment-selector">
                     <legend>Choisissez le paiement</legend>
                     <label class="payment-option"><input type="radio" name="payment_method" value="paiement_livraison" checked>
                         <span><strong>À la livraison</strong><small>Régler à la réception de vos articles.</small></span>
                     </label>
+                    <?php if ($shwaryAmount !== null): ?>
+                    <input type="hidden" name="shwary_amount" value="<?= $shwaryAmount ?>">
+                    <input type="hidden" name="shwary_sandbox" value="<?= (int)shwary_sandbox() ?>">
+                    <label class="payment-option"><input type="radio" name="payment_method" value="shwary">
+                        <span><strong>Shwary Mobile Money</strong><small><?= number_format($shwaryAmount, 0, ',', ' ') ?> CDF. <?= shwary_sandbox() ? 'Mode test, sans débit.' : 'La confirmation de la commande lance la demande sur ce téléphone congolais.' ?></small></span>
+                    </label>
+                    <?php endif; ?>
                     <?php require_once __DIR__ . '/../payments/netikash.php'; if (netikash_ready()): ?>
                     <label class="payment-option"><input type="radio" name="payment_method" value="netikash">
                         <span><strong>En ligne — Netikash</strong><small>Mobile Money et autres moyens proposés par Netikash sur sa page sécurisée. Montant : <?= money($cartTotal) ?> (USD).</small></span>
                     </label>
-                    <?php else: ?>
-                    <p class="muted">Le paiement en ligne sera disponible après activation du compte marchand Netikash et de l'adresse HTTPS.</p>
                     <?php endif; ?>
                 </fieldset>
                 <p class="muted">Ne communiquez jamais vos codes PIN ou mots de passe à la boutique.</p>

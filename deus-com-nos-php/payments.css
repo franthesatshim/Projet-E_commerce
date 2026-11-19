@@ -1,26 +1,32 @@
-/* DEUS COM NOS — paiement, palette bleu ardoise / violet doux */
-.payment-selector{
-  border:1px solid #dfe3ef;
-  border-radius:10px;
-  padding:15px;
-  margin:18px 0;
-  background:#f8f9fd;
+.payment-selector {
+    min-width: 0;
+    padding: 13px;
+    margin: 16px 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--wash);
 }
-.payment-selector legend{font-weight:750;color:#344667;padding:0 5px}
-.payment-option{
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-  margin:12px 0;
-  padding:14px;
-  border:1px solid #e2e5f1;
-  border-radius:9px;
-  background:#fff;
-  cursor:pointer;
+
+.payment-selector legend {
+    padding-inline: 5px;
+    font-weight: 700;
 }
-.payment-option:has(input:checked){border-color:#7b80aa;background:#f1f0f9}
-.payment-option input{margin-top:4px;accent-color:#596b95}
-.payment-option span{display:flex;flex-direction:column;gap:6px;min-width:0}
-.payment-option small{color:#5e6981;line-height:1.45}
-.payment-action{margin:15px 0}
-.payment-action button{max-width:100%;white-space:normal}
+
+.payment-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper);
+    cursor: pointer;
+}
+
+.payment-option:has(input:checked) { border-color: var(--accent); }
+.payment-option input { margin-top: 4px; accent-color: var(--accent); }
+.payment-option span { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.payment-option small { color: var(--muted); line-height: 1.45; }
+.payment-action { margin: 15px 0; }
+.payment-action button { max-width: 100%; white-space: normal; }

@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../invoices.php';
+
 /**
  * Netikash hosted checkout (OAuth2 client credentials).
  * Documentation: https://developer.netikash.com/payment-flow
@@ -161,7 +163,9 @@ function netikash_order_state(string $providerState): string {
 function netikash_reconcile_verified(PDO $db, int $attemptId, array $verification): string {
     $db->beginTransaction();
     try {
-        $s = $db->prepare('SELECT a.*,o.payment_status,o.status AS order_status FROM payment_attempts a JOIN orders o ON o.id=a.order_id WHERE a.id=? FOR UPDATE');
+        $s = $db->prepare("SELECT a.*,o.payment_status,o.status AS order_status
+                           FROM payment_attempts a JOIN orders o ON o.id=a.order_id
+                           WHERE a.id=? AND o.payment_method='netikash' FOR UPDATE");
         $s->execute([$attemptId]);
         $attempt = $s->fetch();
         if (!$attempt) throw new RuntimeException('Tentative de paiement introuvable.');
@@ -173,7 +177,8 @@ function netikash_reconcile_verified(PDO $db, int $attemptId, array $verificatio
             $db->commit();
             return (string)$attempt['payment_status'];
         }
-        if ($attempt['status'] === 'completed' || $attempt['payment_status'] === 'paye') {
+        if ($attempt['payment_status'] === 'paye') {
+            create_paid_invoice($db, (int)$attempt['order_id']);
             $db->commit();
             return 'paye';
         }
@@ -184,7 +189,13 @@ function netikash_reconcile_verified(PDO $db, int $attemptId, array $verificatio
         }
         $db->prepare('UPDATE payment_attempts SET status=?,updated_at=NOW() WHERE id=?')->execute([$state, $attemptId]);
         $orderStatus = netikash_order_state($state);
-        $db->prepare('UPDATE orders SET payment_status=? WHERE id=? AND payment_status<>\'paye\'')->execute([$orderStatus, $attempt['order_id']]);
+        if ($orderStatus === 'paye') {
+            $db->prepare('UPDATE orders SET payment_status=?, payment_reference=? WHERE id=?')
+                ->execute([$orderStatus, $attempt['merchant_ref'], $attempt['order_id']]);
+            create_paid_invoice($db, (int)$attempt['order_id']);
+        } else {
+            $db->prepare('UPDATE orders SET payment_status=? WHERE id=?')->execute([$orderStatus, $attempt['order_id']]);
+        }
         if ($state === 'completed' && $attempt['order_status'] === 'annulee') {
             error_log('URGENT: Netikash completed for canceled order #' . $attempt['order_id'] . ' — refund/manual review required.');
         }
@@ -197,7 +208,8 @@ function netikash_reconcile_verified(PDO $db, int $attemptId, array $verificatio
 }
 
 function netikash_sync_attempt(PDO $db, int $attemptId): string {
-    $s = $db->prepare('SELECT * FROM payment_attempts WHERE id=?');
+    $s = $db->prepare("SELECT a.* FROM payment_attempts a JOIN orders o ON o.id=a.order_id
+                       WHERE a.id=? AND o.payment_method='netikash'");
     $s->execute([$attemptId]);
     $attempt = $s->fetch();
     if (!$attempt) throw new RuntimeException('Paiement introuvable.');
