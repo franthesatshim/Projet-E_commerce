@@ -7,10 +7,33 @@
     const position = carousel.querySelector('[data-carousel-position]');
     const status = carousel.querySelector('[data-carousel-status]');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const canHover = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
     const slideMotion = { duration: 540, easing: 'cubic-bezier(.35,.08,.25,1)' };
     let current = 0;
     let timer;
     let transitions = [];
+    let glowFrame = 0;
+
+    carousel.addEventListener('pointermove', event => {
+        if (event.pointerType !== 'mouse' || reducedMotion.matches || !canHover.matches) return;
+        window.cancelAnimationFrame(glowFrame);
+        glowFrame = window.requestAnimationFrame(() => {
+            const bounds = carousel.getBoundingClientRect();
+            const x = (event.clientX - bounds.left) / bounds.width;
+            const y = (event.clientY - bounds.top) / bounds.height;
+            carousel.style.setProperty('--glow-x', `${Math.max(0, Math.min(100, x * 100))}%`);
+            carousel.style.setProperty('--glow-y', `${Math.max(0, Math.min(100, y * 100))}%`);
+            carousel.classList.add('has-pointer-glow');
+        });
+    });
+
+    function hideGlow() {
+        window.cancelAnimationFrame(glowFrame);
+        carousel.classList.remove('has-pointer-glow');
+    }
+
+    carousel.addEventListener('pointerleave', hideGlow);
+    canHover.addEventListener('change', hideGlow);
 
     function stopTransitions() {
         transitions.forEach(animation => animation.cancel());
@@ -70,7 +93,10 @@
     carousel.querySelector('[data-carousel-previous]').addEventListener('click', () => navigate(-1));
     carousel.querySelector('[data-carousel-next]').addEventListener('click', () => navigate(1));
     reducedMotion.addEventListener('change', event => {
-        if (event.matches) stopTransitions();
+        if (event.matches) {
+            stopTransitions();
+            hideGlow();
+        }
         schedule();
     });
     document.addEventListener('visibilitychange', schedule);

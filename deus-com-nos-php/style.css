@@ -226,6 +226,25 @@ button:disabled { cursor: not-allowed; opacity: .55; }
     color: #fff8ee;
 }
 
+@media (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .editorial-hero::before {
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        pointer-events: none;
+        content: '';
+        opacity: 0;
+        background: radial-gradient(ellipse 450px 330px at var(--glow-x, 50%) var(--glow-y, 50%),
+            #be835f6b, #91523636 53%, transparent 100%);
+        background: radial-gradient(ellipse 450px 330px at var(--glow-x, 50%) var(--glow-y, 50%),
+            color-mix(in srgb, #c88b536b var(--glow-x, 50%), #a75c476b),
+            #91523636 53%, transparent 100%);
+        transition: opacity .32s ease;
+    }
+
+    .editorial-hero.has-pointer-glow::before { opacity: 1; }
+}
+
 .editorial-slides {
     position: relative;
     isolation: isolate;
