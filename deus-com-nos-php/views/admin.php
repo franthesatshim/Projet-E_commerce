@@ -178,8 +178,16 @@ if ($orders) {
                 </td>
                 <td><?= money($o['total']) ?></td>
                 <td>
-                    <strong><?= $o['payment_method'] === 'netikash' ? 'Netikash' : 'À la livraison' ?></strong><br>
+                    <strong><?= e(payment_method_label($o['payment_method'])) ?></strong><br>
                     <small><?= e(payment_label($o['payment_status'])) ?></small>
+                    <?php if ($o['payment_method'] === 'paiement_livraison' && $o['status'] === 'livree' && $o['payment_status'] === 'en_attente'): ?>
+                        <form method="post" class="payment-action">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="action" value="admin_confirm_cod">
+                            <input type="hidden" name="id" value="<?= (int)$o['id'] ?>">
+                            <button type="submit" class="outline">Confirmer l’encaissement</button>
+                        </form>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <form method="post" class="status-form">

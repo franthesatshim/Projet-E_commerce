@@ -1,8 +1,10 @@
-# Photos de présentation HD — DEUS COM NOS
+# Visuels d’accueil — DEUS COM NOS
 
-Les quatre photos ci-dessous servent **uniquement de visuels d'ambiance pour le carrousel d'accueil**. Elles ne représentent pas nécessairement des articles en stock.
+`editorial-deus-com-nos.webp` est un visuel d’ambiance original généré pour DEUS COM NOS. Les fiches et les catégories affichent les photos des produits du catalogue.
 
-Les photos sont chargées depuis les serveurs des auteurs / de leur plateforme, avec une URL de grande taille dans `views/home.php` ; si l'image Internet échoue, une image PNG locale de `assets/hero/` s'affiche automatiquement.
+## Ancien carrousel
+
+Les photos ci-dessous ont été utilisées dans l’ancien carrousel d’accueil.
 
 | Position | Sujet | Source / crédit | Licence de la source |
 |---|---|---|---|
@@ -10,8 +12,3 @@ Les photos sont chargées depuis les serveurs des auteurs / de leur plateforme, 
 | 2 | Escarpins beige | [Lucent Designs Media International sur Pexels](https://www.pexels.com/photo/elegant-high-heel-shoes-on-white-background-28821783/) | Pexels License |
 | 3 | Petit sac noir | [Rube G. sur Pexels](https://www.pexels.com/photo/design-purse-in-white-background-17152271/) | Pexels License |
 | 4 | Sandales à talons | [José Martin Segura Benites sur Pexels](https://www.pexels.com/photo/elegant-high-heels-on-white-background-26856057/) | Pexels License |
-
-## Rendu
-La combinaison `mix-blend-mode: multiply` et d'un léger masque CSS fond les arrière-plans blancs dans le décor pastel. Il s'agit d'une **simulation de détourage** : les originaux Internet sont des JPEG, pas des PNG transparents.
-
-Le carrousel reste fonctionnel sans Internet grâce aux PNG locaux préexistants.

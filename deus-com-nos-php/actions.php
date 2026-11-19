@@ -18,7 +18,7 @@ $returnPage = match (true) {
     $action === 'register'                        => 'register',
     $action === 'login'                           => 'login',
     in_array($action, ['checkout', 'update_cart', 'remove'], true) => 'cart',
-    in_array($action, ['netikash_start', 'netikash_sync'], true) => 'orders',
+    in_array($action, ['netikash_start', 'netikash_sync', 'shwary_start', 'shwary_sync'], true) => 'orders',
     str_starts_with($action, 'admin_')            => 'admin',
     default                                       => 'shop',
 };
@@ -128,7 +128,7 @@ try {
                 redirect('index.php?page=login');
             }
             $method = (string)($_POST['payment_method'] ?? 'paiement_livraison');
-            if (!in_array($method, ['paiement_livraison', 'netikash'], true)) {
+            if (!in_array($method, ['paiement_livraison', 'netikash', 'shwary'], true)) {
                 throw new Exception('Mode de paiement inconnu.');
             }
             if ($method === 'netikash') {
@@ -137,15 +137,28 @@ try {
                 try {
                     // Vérifier que la migration est appliquée AVANT de réserver du stock.
                     $db->query('SELECT id FROM payment_attempts LIMIT 1');
+                    $db->query('SELECT order_id FROM invoices LIMIT 1');
                 } catch (PDOException $e) {
                     error_log('Netikash : table payment_attempts absente : ' . $e->getMessage());
-                    throw new Exception('Paiement indisponible : la migration Netikash doit être appliquée.');
+                    throw new Exception('Paiement indisponible : les migrations Netikash et factures doivent être appliquées.');
                 }
             }
             $address = trim((string)($_POST['address'] ?? ''));
             $phone   = trim((string)($_POST['phone'] ?? ''));
             if (mb_strlen($address) < 8 || mb_strlen($address) > 1000) throw new Exception('Adresse de livraison invalide (8 caractères minimum).');
             if (!preg_match('/^[0-9+()\s.-]{8,20}$/', $phone)) throw new Exception('Numéro de téléphone invalide.');
+            $shwaryAmount = 0;
+            $shwarySandbox = true;
+            if ($method === 'shwary') {
+                require_once __DIR__ . '/payments/shwary.php';
+                if (!shwary_ready()) throw new Exception('Le paiement Shwary est actuellement indisponible.');
+                $phone = shwary_phone($phone);
+                $shwaryAmount = (int)($_POST['shwary_amount'] ?? 0);
+                $shwarySandbox = ($_POST['shwary_sandbox'] ?? '1') !== '0';
+                if ($shwarySandbox !== shwary_sandbox()) throw new Exception('Le mode Shwary a changé. Vérifiez votre panier.');
+                $db->query('SELECT is_sandbox FROM payment_attempts LIMIT 1');
+                $db->query('SELECT order_id FROM invoices LIMIT 1');
+            }
             $cart = $_SESSION['cart'] ?? [];
             if (!$cart) throw new Exception('Votre panier est vide.');
 
@@ -163,6 +176,9 @@ try {
                 $total += (float)$p['price'] * $qty;
             }
             if ($total <= 0.0) throw new Exception('Total invalide. Contactez la boutique.');
+            if ($method === 'shwary' && shwary_quote((string)round($total, 2)) !== $shwaryAmount) {
+                throw new Exception('Le montant du paiement Shwary a changé ou est indisponible. Vérifiez votre panier.');
+            }
             $db->prepare('INSERT INTO orders(user_id,total,address,phone,status,payment_method,payment_status,payment_reference) VALUES(?,?,?,?,?,?,?,?)')
                ->execute([user()['id'], round($total, 2), $address, $phone, 'en_attente', $method, 'en_attente', 'CMD-' . strtoupper(bin2hex(random_bytes(6)))]);
             $orderId = (int)$db->lastInsertId();
@@ -174,6 +190,19 @@ try {
             }
             $db->commit();
             unset($_SESSION['cart']);
+            if ($method === 'shwary') {
+                try {
+                    $paymentStatus = shwary_start($db, $orderId, (int)user()['id'], $shwaryAmount, $shwarySandbox);
+                    flash($paymentStatus === 'en_attente'
+                        ? ($shwarySandbox ? 'Demande de test envoyée. Vérifiez son statut dans le détail de commande.'
+                            : 'Demande envoyée. Validez le paiement sur votre téléphone Mobile Money.')
+                        : 'État du paiement : ' . payment_label($paymentStatus));
+                } catch (RuntimeException $e) {
+                    if ($e instanceof PDOException) throw $e;
+                    flash('Commande #' . $orderId . ' enregistrée. ' . $e->getMessage());
+                }
+                redirect('index.php?page=order&id=' . $orderId);
+            }
             if ($method === 'netikash') {
                 // Never hold database locks while calling a remote payment API.
                 try {
@@ -191,12 +220,27 @@ try {
         // --------------- Démarrer ou vérifier un paiement Netikash (POST + CSRF + propriétaire)
         case 'netikash_start':
         case 'netikash_sync':
+        case 'shwary_start':
+        case 'shwary_sync':
             if (!user()) throw new Exception('Connexion obligatoire.');
+            $provider = str_starts_with($action, 'shwary_') ? 'shwary' : 'netikash';
             $orderId = (int)($_POST['order_id'] ?? 0);
             $orderQ = $db->prepare('SELECT * FROM orders WHERE id=? AND user_id=?');
             $orderQ->execute([$orderId, (int)user()['id']]);
             $order = $orderQ->fetch();
-            if (!$order || $order['payment_method'] !== 'netikash') throw new Exception('Commande ou moyen de paiement introuvable.');
+            if (!$order || $order['payment_method'] !== $provider) throw new Exception('Commande ou moyen de paiement introuvable.');
+            if ($provider === 'shwary') {
+                require_once __DIR__ . '/payments/shwary.php';
+                if ($action === 'shwary_start') {
+                    $sandbox = ($_POST['shwary_sandbox'] ?? '1') !== '0';
+                    $paymentStatus = shwary_start($db, $orderId, (int)user()['id'], (int)($_POST['shwary_amount'] ?? 0), $sandbox);
+                    flash($paymentStatus === 'en_attente'
+                        ? ($sandbox ? 'Demande de test envoyée. Vérifiez son statut dans le détail de commande.'
+                            : 'Demande envoyée. Validez le paiement sur votre téléphone Mobile Money.')
+                        : 'État du paiement : ' . payment_label($paymentStatus));
+                    redirect('index.php?page=order&id=' . $orderId);
+                }
+            }
             require_once __DIR__ . '/payments/netikash.php';
             if ($action === 'netikash_start') {
                 $url = netikash_start_checkout($db, $orderId, (int)user()['id']);
@@ -206,7 +250,7 @@ try {
             $st->execute([$orderId]);
             $attemptId = (int)$st->fetchColumn();
             if ($attemptId < 1) throw new Exception('Aucune tentative de paiement.');
-            $paymentStatus = netikash_sync_attempt($db, $attemptId);
+            $paymentStatus = $provider === 'shwary' ? shwary_sync_attempt($db, $attemptId) : netikash_sync_attempt($db, $attemptId);
             flash('État du paiement vérifié : ' . payment_label($paymentStatus));
             redirect('index.php?page=order&id=' . $orderId);
 
@@ -258,6 +302,22 @@ try {
             flash('Visibilité du produit modifiée.');
             redirect('index.php?page=admin');
 
+        case 'admin_confirm_cod':
+            if (!is_admin()) throw new Exception('Accès refusé.');
+            $orderId = (int)($_POST['id'] ?? 0);
+            $db->beginTransaction();
+            $q = $db->prepare("SELECT payment_status FROM orders WHERE id=? AND payment_method='paiement_livraison' AND status='livree' FOR UPDATE");
+            $q->execute([$orderId]);
+            if (!in_array($q->fetchColumn(), ['en_attente', 'paye'], true)) {
+                throw new Exception('Seules les commandes livrées payables à la livraison peuvent être encaissées ici.');
+            }
+            require_once __DIR__ . '/invoices.php';
+            $db->prepare("UPDATE orders SET payment_status='paye' WHERE id=?")->execute([$orderId]);
+            create_paid_invoice($db, $orderId);
+            $db->commit();
+            flash('Encaissement confirmé. La facture est disponible.');
+            redirect('index.php?page=admin');
+
         case 'admin_status':
             if (!is_admin()) throw new Exception('Accès refusé.');
             $newStatus = (string)($_POST['status'] ?? '');
@@ -271,15 +331,15 @@ try {
             $pay = $db->prepare('SELECT payment_method,payment_status FROM orders WHERE id=? FOR UPDATE');
             $pay->execute([$orderId]);
             $payment = $pay->fetch();
-            if ($payment['payment_method'] === 'netikash') {
+            if (in_array($payment['payment_method'], ['netikash', 'shwary'], true)) {
                 if (in_array($newStatus, ['confirmee','expediee','livree'], true) && $payment['payment_status'] !== 'paye') {
-                    throw new Exception('Paiement Netikash non encaissé : expédition impossible.');
+                    throw new Exception('Paiement en ligne non encaissé : expédition impossible.');
                 }
                 if ($newStatus === 'annulee') {
-                    $pending = $db->prepare("SELECT COUNT(*) FROM payment_attempts WHERE order_id=? AND status IN ('initiating','unknown','requested','approved','locked')");
+                    $pending = $db->prepare("SELECT COUNT(*) FROM payment_attempts WHERE order_id=? AND status IN ('initiating','unknown','requested','approved','locked','pending','submitted')");
                     $pending->execute([$orderId]);
                     if ((int)$pending->fetchColumn() > 0) {
-                        throw new Exception('Paiement Netikash encore actif : attendez confirmation ou annulation côté prestataire.');
+                        throw new Exception('Paiement en ligne encore actif : attendez confirmation ou annulation côté prestataire.');
                     }
                     if ($payment['payment_status'] === 'paye') {
                         throw new Exception('Commande payée : gérer le remboursement avant annulation.');
@@ -310,7 +370,7 @@ try {
     } else {
         flash($ex->getMessage());
     }
-    if (in_array($action, ['netikash_start', 'netikash_sync'], true) && user()) {
+    if (in_array($action, ['netikash_start', 'netikash_sync', 'shwary_start', 'shwary_sync'], true) && user()) {
         redirect('index.php?page=order&id=' . max(1, (int)($_POST['order_id'] ?? 0)));
     }
     redirect('index.php?page=' . $returnPage);

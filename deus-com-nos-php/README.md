@@ -1,7 +1,7 @@
 # DEUS COM NOS — boutique PHP / MySQL
 
 Boutique en ligne de chaussures, sacs, tissus wax et perruques, développée en PHP 8.2+ et MySQL, sans framework.
-Le client peut choisir **le paiement à la livraison** ou **Netikash (paiement en ligne réel)** après activation de l’intégration et configuration du webhook sécurisé.
+La boutique propose le paiement à la livraison et les paiements en ligne Shwary (Mobile Money en RDC) et Netikash après configuration. Une facture est disponible dans le détail de la commande après encaissement.
 
 ## Installation (XAMPP)
 
@@ -21,7 +21,7 @@ Le client peut choisir **le paiement à la livraison** ou **Netikash (paiement e
 2. Importer `migration.sql` pour ajouter le téléphone et les champs de paiement manquants sans supprimer de données.
 3. Importer `catalogue.sql` pour **ajouter les 35 nouveaux produits**. Si un produit de même nom existe déjà, sa catégorie, sa description et sa photo sont mises à jour ; **son prix et son stock ne sont pas écrasés**. Les anciens articles aux noms de démonstration connus sont **masqués mais jamais supprimés**.
 4. Les **comptes, commandes, lignes de commande et catégories historiques sont conservés**. Aucun `DROP` de table réelle ni `DELETE` de produit/client/commande n'est lancé.
-5. Ne pas importer `schema.sql` en guise de migration : il sert aux installations neuves (ses `CREATE TABLE IF NOT EXISTS` ne mettent pas à niveau des colonnes existantes).
+5. Appliquer `migration_netikash.sql` si la base date d’avant Netikash, puis importer `migration_shwary.sql` (une fois) et `migration_invoices.sql`. Pour une installation neuve, `schema.sql` contient déjà les tables et la colonne nécessaires.
 6. En local avec Apache sur le port 3000 : `http://localhost:3000/Projet-E_commerce/deus-com-nos-php/index.php` ; selon la configuration du `DocumentRoot`, l'URL peut aussi être `http://localhost:3000/deus-com-nos-php/index.php`.
 
 
@@ -77,11 +77,28 @@ envois de photos vérifiés (type réel de l'image, nom généré, exécution de
 
 **Guide d’installation pas à pas :** [docs/DEPLOIEMENT_DOCKER_NETIKASH.md](../docs/DEPLOIEMENT_DOCKER_NETIKASH.md).
 
-- Deux parcours : **paiement à la livraison** (toujours actif) et **paiement hébergé Netikash** (activable via variables d'environnement).
+- Netikash est activable via variables d’environnement. Le paiement à la livraison reste disponible.
 - Le site conserve les prix en **USD**. Le client choisit les moyens réellement disponibles dans l'interface Netikash : aucun opérateur n'est simulé.
 - Contrôle du montant côté serveur, requête OAuth2, validation HTTPS, références uniques et enregistrement des tentatives.
 - Un webhook n'est accepté qu'avec une signature HMAC vérifiée, un timestamp récent et une **vérification serveur** de la transaction.
 - Seul le statut Netikash `completed` permet de marquer une commande `paye`. `approved` est `autorise`, sans autoriser l'expédition.
-- Pour une **ancienne base** : sauvegarde, puis `migration.sql` et `migration_netikash.sql`. Pour une **nouvelle installation Docker**, les scripts `schema.sql` et `catalogue.sql` sont chargés automatiquement au premier démarrage.
+- Pour une **ancienne base**, suivre les migrations ci-dessus, y compris `migration_invoices.sql` avant de reprendre les encaissements en ligne. Pour une **nouvelle installation Docker**, les scripts `schema.sql` et `catalogue.sql` sont chargés automatiquement au premier démarrage.
 - Pour Docker, copier `.env.example` vers `.env`, modifier les mots de passe, puis `docker compose up -d --build`.
 - **Les identifiants Netikash ne doivent jamais être publiés dans GitHub.** Le paiement réel reste désactivé avec `NETIKASH_ENABLED=0`, valeur par défaut.
+
+## Shwary Mobile Money en RDC
+
+1. Créer les identifiants marchands dans [Shwary](https://app.shwary.com/) et renseigner `SHWARY_MERCHANT_ID` et `SHWARY_MERCHANT_KEY` dans le fichier local `.env` avec Docker, ou dans les variables d’environnement du serveur PHP. Conserver ces identifiants hors de Git.
+2. Définir `APP_URL` sur la racine HTTPS publique de la boutique, puis indiquer le taux marchand entier `SHWARY_CDF_PER_USD` (nombre de CDF pour 1 USD). Le catalogue reste en USD et le montant facturé par Shwary, arrondi au franc, est affiché avant validation. L’option est proposée pour un montant supérieur à 2 900 CDF.
+3. Démarrer avec `SHWARY_ENABLED=1` et `SHWARY_SANDBOX=1`. Avec Docker, appliquer les variables avec `docker compose up -d --build`. Valider un paiement sandbox avec un numéro congolais. La simulation ne débite aucun compte et n’émet aucune facture.
+4. Après validation du compte marchand et des essais, définir `SHWARY_SANDBOX=0` pour activer le débit réel.
+
+Le client confirme la demande sur son téléphone. Shwary notifie `/shwary_webhook.php`, qui relit la transaction avec les identifiants du marchand. Le client peut aussi déclencher cette vérification depuis le détail de sa commande. Si une coupure survient avant réception de l’identifiant de transaction, la boutique bloque une nouvelle tentative sur la commande. Rechercher la demande dans le tableau de bord Shwary ou auprès du support avant d’envisager un autre paiement.
+
+[Documentation API marchande Shwary](https://github.com/shwary-co/shwary-doc/blob/main/merchant-fr.md)
+
+## Factures
+
+- Shwary et Netikash émettent une facture lors de l’enregistrement d’un paiement réel confirmé.
+- Pour un règlement à la livraison, l’administrateur indique que la commande est livrée, puis clique sur **Confirmer l’encaissement** après avoir reçu le paiement.
+- Le client retrouve **Voir la facture** dans **Mes commandes → Détail**. La facture est imprimable et peut être enregistrée en PDF via la boîte de dialogue d’impression.

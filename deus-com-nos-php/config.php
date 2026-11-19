@@ -75,7 +75,7 @@ function money($v): string { return number_format((float)$v, 2, ',', ' ') . ' $'
 
 const PAYMENT_STATUSES = [
     'en_attente' => 'En attente de paiement',
-    'simule' => 'Ancien paiement de test',
+    'simule' => 'Paiement simulé',
     'autorise' => 'Paiement confirmé (en cours de règlement)',
     'paye' => 'Payé',
     'echoue' => 'Paiement échoué',
@@ -84,6 +84,15 @@ const PAYMENT_STATUSES = [
     'bloque' => 'Paiement bloqué (vérification requise)',
 ];
 function payment_label(?string $status): string { return PAYMENT_STATUSES[$status ?? ''] ?? (string)$status; }
+
+function payment_method_label(?string $method): string {
+    return match ($method) {
+        'paiement_livraison' => 'À la livraison',
+        'netikash' => 'Netikash',
+        'shwary' => 'Shwary Mobile Money',
+        default => $method ?? 'Non précisé',
+    };
+}
 
 function status_label(?string $status): string { return ORDER_STATUSES[$status ?? ''] ?? (string)$status; }
 

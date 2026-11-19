@@ -1,7 +1,7 @@
 # Projet E-commerce — DEUS COM NOS
 
 Projet de groupe : boutique en ligne de mode (chaussures, sacs, wax, perruques)
-avec paiement à la livraison.
+avec paiement à la livraison, paiement Mobile Money Shwary en RDC après activation et facture après encaissement.
 
 | Dossier / fichier | Contenu |
 |---|---|

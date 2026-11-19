@@ -13,7 +13,6 @@ function render_card(array $p): void {
             <?php else: ?>
                 <span class="photo-fallback">Photo à venir</span>
             <?php endif ?>
-            <span class="catalog-photo-label"><?= e($cat ?? 'Mode') ?></span>
         </a>
         <div class="catalog-card-body">
             <span class="catalog-category"><?= e($cat ?? 'Boutique') ?></span>
