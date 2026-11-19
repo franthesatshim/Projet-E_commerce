@@ -27,7 +27,6 @@ $latest = $db->query(
         <button type="button" data-carousel-previous aria-label="Image précédente">←</button>
         <span class="editorial-position" data-carousel-position aria-hidden="true">1 / 3</span>
         <button type="button" data-carousel-next aria-label="Image suivante">→</button>
-        <button type="button" data-carousel-toggle>Pause</button>
     </div>
     <span class="editorial-status" data-carousel-status aria-live="polite"></span>
 </section>

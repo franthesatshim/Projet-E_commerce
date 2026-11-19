@@ -13,7 +13,7 @@ $customer = user();
     <link rel="stylesheet" href="style.css?v=20261119-stack">
     <link rel="stylesheet" href="payments.css?v=20261119-editorial">
     <?php if ($page === 'home'): ?>
-    <script src="assets/home-carousel.js?v=20261119-stack" defer></script>
+    <script src="assets/home-carousel.js?v=20261119-loop" defer></script>
     <?php endif ?>
 </head>
 <body>
