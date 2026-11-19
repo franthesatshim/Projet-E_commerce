@@ -8,13 +8,13 @@ $latest = $db->query(
 ?>
 <section class="editorial-hero" aria-labelledby="home-title" data-home-carousel>
     <div class="editorial-slides" aria-hidden="true">
-        <div class="editorial-slide editorial-slide-look is-current" data-slide-name="Tenue beige sur des marches en pierre">
+        <div class="editorial-slide editorial-slide-look is-current" data-depth="0" data-slide-name="Tenue beige sur des marches en pierre">
             <img class="editorial-photo" src="assets/hero/editorial-tenue.webp" width="1600" height="1067" alt="" fetchpriority="high">
         </div>
-        <div class="editorial-slide editorial-slide-bag" data-slide-name="Détail d’un sac en cuir brun">
+        <div class="editorial-slide editorial-slide-bag" data-depth="1" data-slide-name="Détail d’un sac en cuir brun">
             <img class="editorial-photo" src="assets/hero/editorial-sac.webp" width="1600" height="1067" alt="" decoding="async">
         </div>
-        <div class="editorial-slide editorial-slide-shoes" data-slide-name="Escarpins sur des marches en pierre">
+        <div class="editorial-slide editorial-slide-shoes" data-depth="2" data-slide-name="Escarpins sur des marches en pierre">
             <img class="editorial-photo" src="assets/hero/editorial-talons.webp" width="1600" height="898" alt="" decoding="async">
         </div>
     </div>

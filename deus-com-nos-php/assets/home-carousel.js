@@ -8,7 +8,7 @@
     const toggle = carousel.querySelector('[data-carousel-toggle]');
     const status = carousel.querySelector('[data-carousel-status]');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const slideMotion = { duration: 680, easing: 'cubic-bezier(.25,.7,.25,1)' };
+    const slideMotion = { duration: 760, easing: 'cubic-bezier(.28,.68,.24,1)' };
     let current = 0;
     let playing = !reducedMotion.matches;
     let hovering = false;
@@ -24,28 +24,37 @@
 
     function showSlide(offset, announce = false) {
         stopTransitions();
-        const outgoing = slides[current];
-        outgoing.classList.remove('is-current');
+        const animate = !reducedMotion.matches && typeof slides[current].animate === 'function';
+        const start = animate ? slides.map(slide => getComputedStyle(slide).transform) : [];
+        const previous = current;
         current = (current + offset + slides.length) % slides.length;
-        const incoming = slides[current];
-        incoming.classList.add('is-current');
+        slides.forEach((slide, index) => {
+            slide.dataset.depth = (index - current + slides.length) % slides.length;
+            slide.classList.toggle('is-current', index === current);
+        });
 
-        if (!reducedMotion.matches && typeof incoming.animate === 'function') {
-            const distance = offset > 0 ? 100 : -100;
-            transitions = [
-                outgoing.animate([
-                    { transform: 'translateX(0)', opacity: 1 },
-                    { transform: `translateX(${-distance}%)`, opacity: 1 },
-                ], slideMotion),
-                incoming.animate([
-                    { transform: `translateX(${distance}%)` },
-                    { transform: 'translateX(0)' },
-                ], slideMotion),
-            ];
+        if (animate) {
+            const end = slides.map(slide => getComputedStyle(slide).transform);
+            const turningCard = offset > 0 ? previous : current;
+            transitions = slides.map((slide, index) => {
+                if (index !== turningCard) {
+                    return slide.animate([{ transform: start[index] }, { transform: end[index] }], slideMotion);
+                }
+
+                const fromLayer = offset > 0 ? 4 : 1;
+                const toLayer = offset > 0 ? 1 : 4;
+                const turn = 'translate(-27%, -14%) rotate(-16deg)';
+                return slide.animate([
+                    { transform: start[index], zIndex: fromLayer },
+                    { transform: turn, zIndex: fromLayer, offset: .5 },
+                    { transform: turn, zIndex: toLayer, offset: .51 },
+                    { transform: end[index], zIndex: toLayer },
+                ], slideMotion);
+            });
         }
 
         position.textContent = `${current + 1} / ${slides.length}`;
-        if (announce) status.textContent = `Image ${current + 1} sur ${slides.length} : ${incoming.dataset.slideName}`;
+        if (announce) status.textContent = `Image ${current + 1} sur ${slides.length} : ${slides[current].dataset.slideName}`;
     }
 
     function schedule() {
@@ -108,7 +117,6 @@
     });
     document.addEventListener('visibilitychange', schedule);
 
-    carousel.classList.add('has-carousel');
     controls.hidden = false;
     updatePlayback();
 })();
