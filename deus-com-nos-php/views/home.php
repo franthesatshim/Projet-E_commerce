@@ -6,13 +6,30 @@ $latest = $db->query(
      WHERE p.active=1 ORDER BY p.created_at DESC, p.id DESC LIMIT 8'
 )->fetchAll();
 ?>
-<section class="editorial-hero" aria-labelledby="home-title">
-    <img class="editorial-photo" src="assets/hero/editorial-deus-com-nos.webp" width="1536" height="1024" alt="" fetchpriority="high">
+<section class="editorial-hero" aria-labelledby="home-title" data-home-carousel>
+    <div class="editorial-slides" aria-hidden="true">
+        <div class="editorial-slide is-current" data-slide-name="Portrait de la collection">
+            <img class="editorial-photo" src="assets/hero/editorial-deus-com-nos.webp" width="1536" height="1024" alt="" fetchpriority="high">
+        </div>
+        <div class="editorial-slide editorial-slide-product editorial-slide-bag" data-slide-name="Collection de sacs">
+            <img class="editorial-photo" src="assets/hero/sac-bordeaux.png" width="720" height="654" alt="" decoding="async">
+        </div>
+        <div class="editorial-slide editorial-slide-product editorial-slide-shoes" data-slide-name="Collection de chaussures">
+            <img class="editorial-photo" src="assets/hero/chaussures-ballerines.png" width="720" height="623" alt="" decoding="async">
+        </div>
+    </div>
     <div class="editorial-copy">
         <h1 id="home-title">L’allure vous<br><em>appartient.</em></h1>
         <p>Chaussures, sacs, tissus wax et perruques. Trouvez les pièces qui expriment votre style.</p>
         <a class="btn editorial-cta" href="?page=shop">Découvrir la collection <span class="link-arrow" aria-hidden="true"></span></a>
     </div>
+    <div class="editorial-controls" data-carousel-controls hidden>
+        <button type="button" data-carousel-previous aria-label="Image précédente">←</button>
+        <span class="editorial-position" data-carousel-position aria-hidden="true">1 / 3</span>
+        <button type="button" data-carousel-next aria-label="Image suivante">→</button>
+        <button type="button" data-carousel-toggle>Pause</button>
+    </div>
+    <span class="editorial-status" data-carousel-status aria-live="polite"></span>
 </section>
 
 <?php if ($shopCategories): ?>
