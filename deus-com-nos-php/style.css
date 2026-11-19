@@ -232,10 +232,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 }
 
 .editorial-slides { z-index: -2; }
-.editorial-slide {
-    opacity: 0;
-    transition: opacity .65s ease;
-}
+.editorial-slide { opacity: 0; }
 
 .editorial-slide.is-current { opacity: 1; }
 

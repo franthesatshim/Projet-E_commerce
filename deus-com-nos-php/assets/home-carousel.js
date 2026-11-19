@@ -8,19 +8,44 @@
     const toggle = carousel.querySelector('[data-carousel-toggle]');
     const status = carousel.querySelector('[data-carousel-status]');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const slideMotion = { duration: 680, easing: 'cubic-bezier(.25,.7,.25,1)' };
     let current = 0;
     let playing = !reducedMotion.matches;
     let hovering = false;
     let focused = false;
     let resumedOnControls = false;
     let timer;
+    let transitions = [];
+
+    function stopTransitions() {
+        transitions.forEach(animation => animation.cancel());
+        transitions = [];
+    }
 
     function showSlide(offset, announce = false) {
-        slides[current].classList.remove('is-current');
+        stopTransitions();
+        const outgoing = slides[current];
+        outgoing.classList.remove('is-current');
         current = (current + offset + slides.length) % slides.length;
-        slides[current].classList.add('is-current');
+        const incoming = slides[current];
+        incoming.classList.add('is-current');
+
+        if (!reducedMotion.matches && typeof incoming.animate === 'function') {
+            const distance = offset > 0 ? 100 : -100;
+            transitions = [
+                outgoing.animate([
+                    { transform: 'translateX(0)', opacity: 1 },
+                    { transform: `translateX(${-distance}%)`, opacity: 1 },
+                ], slideMotion),
+                incoming.animate([
+                    { transform: `translateX(${distance}%)` },
+                    { transform: 'translateX(0)' },
+                ], slideMotion),
+            ];
+        }
+
         position.textContent = `${current + 1} / ${slides.length}`;
-        if (announce) status.textContent = `Image ${current + 1} sur ${slides.length} : ${slides[current].dataset.slideName}`;
+        if (announce) status.textContent = `Image ${current + 1} sur ${slides.length} : ${incoming.dataset.slideName}`;
     }
 
     function schedule() {
@@ -76,6 +101,7 @@
     });
     reducedMotion.addEventListener('change', event => {
         if (event.matches) {
+            stopTransitions();
             playing = false;
             updatePlayback();
         }
