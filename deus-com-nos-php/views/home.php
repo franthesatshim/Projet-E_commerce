@@ -8,14 +8,14 @@ $latest = $db->query(
 ?>
 <section class="editorial-hero" aria-labelledby="home-title" data-home-carousel>
     <div class="editorial-slides" aria-hidden="true">
-        <div class="editorial-slide is-current" data-slide-name="Portrait de la collection">
-            <img class="editorial-photo" src="assets/hero/editorial-deus-com-nos.webp" width="1536" height="1024" alt="" fetchpriority="high">
+        <div class="editorial-slide editorial-slide-look is-current" data-slide-name="Tenue beige sur des marches en pierre">
+            <img class="editorial-photo" src="assets/hero/editorial-tenue.webp" width="1600" height="1067" alt="" fetchpriority="high">
         </div>
-        <div class="editorial-slide editorial-slide-product editorial-slide-bag" data-slide-name="Collection de sacs">
-            <img class="editorial-photo" src="assets/hero/sac-bordeaux.png" width="720" height="654" alt="" decoding="async">
+        <div class="editorial-slide editorial-slide-bag" data-slide-name="Détail d’un sac en cuir brun">
+            <img class="editorial-photo" src="assets/hero/editorial-sac.webp" width="1600" height="1067" alt="" decoding="async">
         </div>
-        <div class="editorial-slide editorial-slide-product editorial-slide-shoes" data-slide-name="Collection de chaussures">
-            <img class="editorial-photo" src="assets/hero/chaussures-ballerines.png" width="720" height="623" alt="" decoding="async">
+        <div class="editorial-slide editorial-slide-shoes" data-slide-name="Escarpins sur des marches en pierre">
+            <img class="editorial-photo" src="assets/hero/editorial-talons.webp" width="1600" height="898" alt="" decoding="async">
         </div>
     </div>
     <div class="editorial-copy">
