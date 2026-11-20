@@ -827,6 +827,10 @@ td, th { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: l
 @media (prefers-reduced-motion: no-preference) {
     @view-transition { navigation: auto; }
 
+    [data-scroll-reveal].is-revealing:not(:focus-within) {
+        animation: scroll-reveal .46s cubic-bezier(.2,.7,.3,1) var(--reveal-delay, 0ms) backwards;
+    }
+
     .store-main { view-transition-name: storefront-content; }
     ::view-transition-group(root),
     ::view-transition-old(root),
@@ -834,6 +838,11 @@ td, th { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: l
     ::view-transition-group(storefront-content) { animation-duration: .28s; }
     ::view-transition-old(storefront-content) { animation: .16s ease-in both storefront-exit; }
     ::view-transition-new(storefront-content) { animation: .28s cubic-bezier(.2,.7,.3,1) both storefront-enter; }
+}
+
+@keyframes scroll-reveal {
+    from { opacity: 0; translate: 0 18px; }
+    to { opacity: 1; translate: 0 0; }
 }
 
 @keyframes storefront-exit {

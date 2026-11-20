@@ -19,7 +19,7 @@ $latest = $db->query(
         </div>
     </div>
     <div class="editorial-copy">
-        <h1 id="home-title">L’allure vous<br><em>appartient.</em></h1>
+        <h1 id="home-title" data-scroll-reveal>L’allure vous<br><em>appartient.</em></h1>
         <p>Chaussures, sacs, tissus wax et perruques. Trouvez les pièces qui expriment votre style.</p>
         <a class="btn editorial-cta" href="?page=shop">Découvrir la collection <span class="link-arrow" aria-hidden="true"></span></a>
     </div>
@@ -33,12 +33,12 @@ $latest = $db->query(
 
 <?php if ($shopCategories): ?>
 <section class="home-section" aria-labelledby="category-title">
-    <div class="section-title section-title-centered">
+    <div class="section-title section-title-centered" data-scroll-reveal>
         <h2 id="category-title">Explorer par catégorie</h2>
     </div>
     <div class="category-showcase">
         <?php foreach ($shopCategories as $category): $cover = img_url($category['cover']); ?>
-            <a class="category-tile" href="?page=shop&amp;category=<?= (int)$category['id'] ?>">
+            <a class="category-tile" href="?page=shop&amp;category=<?= (int)$category['id'] ?>" data-scroll-reveal>
                 <span class="category-tile-photo">
                     <?php if ($cover): ?>
                     <img loading="lazy" decoding="async" src="<?= e($cover) ?>" alt="" onerror="this.hidden=true">
@@ -52,7 +52,7 @@ $latest = $db->query(
 <?php endif ?>
 
 <section class="home-section" aria-labelledby="latest-title">
-    <div class="section-title">
+    <div class="section-title" data-scroll-reveal>
         <h2 id="latest-title">Les dernières pièces</h2>
         <a href="?page=shop">Voir tout <span class="link-arrow" aria-hidden="true"></span></a>
     </div>

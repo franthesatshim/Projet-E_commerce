@@ -25,7 +25,7 @@ $related = $p['category_id'] ? $rel->fetchAll() : [];
 </nav>
 
 <div class="product-detail">
-    <div class="product-gallery">
+    <div class="product-gallery" data-scroll-reveal>
         <?php if ($img): ?>
             <img src="<?= e($img) ?>" alt="<?= e($p['name']) ?>" onerror="this.style.display='none';this.nextElementSibling.hidden=false">
             <div class="placeholder" hidden>Photo indisponible</div>
@@ -35,7 +35,7 @@ $related = $p['category_id'] ? $rel->fetchAll() : [];
     </div>
     <div class="product-info">
         <?php if ($p['category']): ?><span class="catalog-category"><?= e($p['category']) ?></span><?php endif ?>
-        <h1><?= e($p['name']) ?></h1>
+        <h1 data-scroll-reveal><?= e($p['name']) ?></h1>
         <p class="price product-price"><?= money($p['price']) ?></p>
         <?php if ($stock < 1): ?>
             <p class="product-stock out-stock">Épuisé pour le moment</p>
@@ -60,7 +60,7 @@ $related = $p['category_id'] ? $rel->fetchAll() : [];
 </div>
 
 <?php if ($related): ?>
-    <div class="section-title"><h2>Vous aimerez aussi</h2><a href="?page=shop&amp;category=<?= (int)$p['category_id'] ?>">Voir la catégorie →</a></div>
+    <div class="section-title" data-scroll-reveal><h2>Vous aimerez aussi</h2><a href="?page=shop&amp;category=<?= (int)$p['category_id'] ?>">Voir la catégorie →</a></div>
     <div class="grid catalog-grid home-grid">
         <?php foreach ($related as $r) render_card($r); ?>
     </div>

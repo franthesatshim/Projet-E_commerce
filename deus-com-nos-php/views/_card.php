@@ -5,7 +5,7 @@ function render_card(array $p): void {
     $stock = (int)$p['stock'];
     $cat   = $p['category'] ?? null;
     ?>
-    <article class="product catalog-card">
+    <article class="product catalog-card" data-scroll-reveal>
         <a class="catalog-photo" href="?page=product&amp;id=<?= (int)$p['id'] ?>" aria-label="Voir <?= e($p['name']) ?>">
             <?php if ($img): ?>
                 <img loading="lazy" src="<?= e($img) ?>" alt="<?= e($p['name']) ?>" onerror="this.style.display='none';this.nextElementSibling.hidden=false">

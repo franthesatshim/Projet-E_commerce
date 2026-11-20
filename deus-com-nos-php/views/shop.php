@@ -23,7 +23,7 @@ $products = $stmt->fetchAll();
 $currentCat = null;
 foreach ($shopCategories as $c) if ((int)$c['id'] === $cat) $currentCat = $c;
 ?>
-<div class="catalog-intro">
+<div class="catalog-intro" data-scroll-reveal>
     <div>
         <span class="catalog-eyebrow">COLLECTION DEUS COM NOS</span>
         <h1><?= $currentCat ? e($currentCat['name']) : 'Découvrez notre catalogue' ?></h1>
@@ -64,7 +64,7 @@ foreach ($shopCategories as $c) if ((int)$c['id'] === $cat) $currentCat = $c;
         </form>
     </aside>
     <section class="catalog-results">
-        <div class="catalog-results-head"><div><strong>Notre sélection</strong><span><?= count($products) ?> produit(s)</span></div></div>
+        <div class="catalog-results-head" data-scroll-reveal><div><strong>Notre sélection</strong><span><?= count($products) ?> produit(s)</span></div></div>
         <div class="grid catalog-grid">
             <?php foreach ($products as $p) render_card($p); ?>
         </div>
